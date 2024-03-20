@@ -5,6 +5,11 @@
  # push the container image to Container Registry
  - name: 'gcr.io/cloud-builders/docker'
    args: ['push', 'gcr.io/$PROJECT_ID/magnet-engine:$COMMIT_SHA']
+# Avoid timeout error
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   entrypoint: 'bash'
+   args: ['-c', 'gcloud config set app/cloud_build_timeout 1600 && gcloud app deploy']
+ timeout: '1600s'
  # Deploy container image to Cloud Run
  - name: 'gcr.io/cloud-builders/gcloud'
    args:
@@ -15,8 +20,6 @@
    - 'gcr.io/$PROJECT_ID/magnet-engine:$COMMIT_SHA'
    - '--region'
    - 'australia-southeast1'
-   - '--timeout'
-   - '3600'
 
  images:
  - 'gcr.io/$PROJECT_ID/magnet-engine:$COMMIT_SHA'

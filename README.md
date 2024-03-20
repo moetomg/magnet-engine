@@ -14,12 +14,38 @@ Welcome to the Magnetic Core Loss Modeling Web-Based GUI project! This project p
 - Web-Based: Accessible through web browsers, eliminating the need for installation and providing convenience for users.
 - Diverse Materials: Support up to 15 ferrites - 77, 78, 79, N27, N30, N49, N87, 3E6, 3F4, T37, 3C90, 3C92, 3C92, 3C94, ML95S
 
-## Usage 
+## GUI Usage 
 - Access the GUI: Visit [MagNet Engine] in your web browser.
 - Select Model: Choose the model and targed material in the sidebar. 
 - Input Parameters: Enter the required excitation and operating parameters into the designated fields. 
 - View Results: Once the simulation is complete, visualizations and relevant data will be displayed on the interface.
 - Analysis and Export: Analyze the results and export data if necessary for further processing.
+
+## Model Usage 
+To test the model, clone the responsitory locally and excute the following code:
+```r
+import os
+import numpy as np
+from magnet-engine.[team] import [team]Model
+# Select model
+material="3C92"
+
+# open magnet-engine as the working dir
+mdl_path = "./[team]/models/"+material+".pt"
+
+# instantiate material-specific model
+mdl = SydneyModel(mdl_path, material="3C92")
+
+# single cycle B excitation
+t = np.linspace(0, 1, [resolution]) 
+B = 0.1*np.sin((360*t+90*np.pi/180)
+p,h = mdl(B,['frequency'],['temperature'])
+```
+Replace
+- [team] with the name of university. (e.g., Sydney)
+- [resolution] with the require steps for each model. (128 for Sydney, 1024 for Panderborn)
+- ['frequency'] with the operating frequency in Hz. (50-450e3 Hz)
+- ['temperature'] with the operating temperature in °C.
 
 ## Installation 
 There is no installation required for this web-based GUI. Simply access it through your web browser using the provided link.

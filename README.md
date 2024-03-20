@@ -1,7 +1,10 @@
 # Magnet Engine
+![GitHub repo size](https://img.shields.io/github/repo-size/moetomg/magnet-engine)
+![GitHub top language](https://img.shields.io/github/languages/top/moetomg/magnet-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub last commit](https://img.shields.io/github/last-commit/moetomg/magnet-engine)
 
-Welcome to the Magnetic Core Loss Modeling Web-Based GUI project! This project provides a user-friendly graphical user interface (GUI) for modeling magnetic core losses in power electronics. The underlying model is based on the IEEE PELS-Google-Enphase-Princeton [MagNet Challenge 2023](https://github.com/minjiechen/magnetchallenge/tree/main) competition models. The website is currently deployed at "TBD"------ and maintained by The University of Sydney. 
+Welcome to the Magnetic Core Loss Modeling Web-Based GUI project! This project provides a user-friendly graphical user interface (GUI) for modeling magnetic core losses in power electronics. The underlying model is based on the IEEE PELS-Google-Enphase-Princeton [MagNet Challenge 2023](https://github.com/minjiechen/magnetchallenge/tree/main) competition models. The website is currently deployed at [Magnet Engine](https://magnet-engine-dfprepz3gq-ts.a.run.app) and maintained by The University of Sydney. 
 
 <img src="icons/mclogo.jpg" width="1000">
 

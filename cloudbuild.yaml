@@ -19,5 +19,6 @@
   images:
   - 'gcr.io/$refreshing-code-417400/magnet-engine:$COMMIT_SHA'
 
-  options:
-  logging: CLOUD_LOGGING_ONLY
+ logsBucket: 'gs://artifacts.refreshing-code-417400.appspot.com/'
+ options:
+    logging: GCS_ONLY

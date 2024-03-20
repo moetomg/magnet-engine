@@ -15,7 +15,7 @@ from Paderborn.Paderborn import PaderbornModel
 alt.themes.enable("dark")
 
 def list_models(directory):
-    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons"]
+    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git"]
     return models
 
 def list_material(folder):
@@ -479,7 +479,7 @@ def main():
         if sum(B) == 0:
             H  = np.linspace(0, 0, resolution_params[model])
         else:
-            P ,H = mdl(B/1000,Frequency*1000,Temperature) # convert to T
+            P ,H = mdl(B/1000,Frequency*1000,Temperature) # convert to B in [T], f in [Hz]
             H = H.squeeze()
 
         # Plot setting  

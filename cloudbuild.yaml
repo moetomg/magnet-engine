@@ -21,4 +21,4 @@
 
  logsBucket: 'gs://artifacts.refreshing-code-417400.appspot.com/'
  options:
-    logging: GCS_ONLY
+    logging: CLOUD_LOGGING_ONLY

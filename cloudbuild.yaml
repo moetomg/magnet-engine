@@ -15,6 +15,7 @@
    - 'gcr.io/$PROJECT_ID/magnet-engine:$COMMIT_SHA'
    - '--region'
    - 'australia-southeast1'
-   timeout: '1800s'
+   - --'timeout = 3600'
+
  images:
  - 'gcr.io/$PROJECT_ID/magnet-engine:$COMMIT_SHA'

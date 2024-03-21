@@ -7,7 +7,7 @@ from pathlib import Path
 import streamlit as st
 import streamlit_vertical_slider as svs
 from htbuilder.units import percent, px
-from htbuilder import HtmlElement, div, br, hr, a, p, img, styles, classes, fonts
+from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
 from Sydney.Sydney import SydneyModel 
 from Paderborn.Paderborn import PaderbornModel
@@ -15,7 +15,7 @@ from Paderborn.Paderborn import PaderbornModel
 alt.themes.enable("dark")
 
 def list_models(directory):
-    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git"]
+    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git" and folder != ".streamlit"]
     return models
 
 def list_material(folder):
@@ -325,7 +325,7 @@ def main():
     
     # First row 
     with col1:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation B waveform</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation waveform [B] </span>""",unsafe_allow_html=True)
 
         # ************************* Shape selector 
         col1_1, col1_2 = st.columns(2)
@@ -339,7 +339,7 @@ def main():
                 st.write(f'<span style="display: inline-block; width: 45%; height: 50%; fill: #F5F5F5;margin-left: 0.8vw;">{svg_code}</span>', unsafe_allow_html=True)
 
     with col3:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation B Parameters</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
         
         # ************************ Waveform parameters setting
         # layout setting 
@@ -435,7 +435,7 @@ def main():
             uploaded_file = st.file_uploader("Resolution >= :red["+str(resolution_params[model])+" steps]", type=['csv'], help="Load user-defined flux excitation and :red[only read data in the 1st row].")
 
     with col4:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Opearting Condition</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [F, T]</span>""",unsafe_allow_html=True)
 
         # ************************ Frequency/Temperature setting
         col4_1, col4_2, _ = st.columns([0.9, 1.5, 0.12])
@@ -452,7 +452,7 @@ def main():
             st.altair_chart(donut_chart_T, use_container_width=True)
 
     with col2:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Time-dome B-H response</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Time-domain response [B-H]</span>""",unsafe_allow_html=True)
         
         #************************* Draw waveform 
         # Data loading 
@@ -498,7 +498,7 @@ def main():
         st.altair_chart(chart, use_container_width=True)
         
     with col5:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Steady-State B-H Loop</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""",unsafe_allow_html=True)
         df2 = pd.DataFrame(columns=['B','H'])
         df2['B'] = np.append(B, B[0])
         df2['H'] = np.append(H, H[0])
@@ -509,7 +509,7 @@ def main():
         st.altair_chart(chart2, use_container_width=True)
         
     with col6:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss </span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss [Pv]</span>""",unsafe_allow_html=True)
         # ------------------------------------------------------ Show Pv
         custom_css = """
         .metric-container {
@@ -519,7 +519,7 @@ def main():
         }
         .metric-container h1 {
             font-size: 4vw; 
-            color: #F39C12;  
+            color: #f38612;  
             text-align: center;
             padding-bottom: 0px;    
         }
@@ -542,7 +542,7 @@ def main():
             with col6_1:
                 # Disabled download button
                 text_contents = '''Error occurs during downloading'''
-                st.download_button("Download\n\nResults", text_contents, disabled=True)
+                st.download_button("Download\n\n B-H Results", text_contents, type="primary",disabled=True)
         else: 
             st.markdown(f'<div class="metric-container"><h1>{round(P/1000,2)}</h1><p>kW/m³</p></div>', unsafe_allow_html=True)
             
@@ -557,12 +557,14 @@ def main():
                 df3['Pv [W/m3]'] = [P] + [None] * (len(B) - 1)
                 csv = df3.to_csv()
                 st.download_button(
-                    label=":orange[Download]\n\n :orange[B-H Results]",
+                    #label=":orange[Download]\n\n :orange[B-H Results]",
+                    label="Download\n\n B-H Results",
                     help="Download B-H-Pv in "+str(resolution_params[model])+ " step as CSV",
                     data=csv.encode('utf-8'),
                     file_name='magnet-engine_prediction.csv',
                     use_container_width = True,
                     mime='text/csv',
+                    type="primary",
                 )
 
 

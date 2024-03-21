@@ -159,7 +159,7 @@ def layout(*args):
     style_div = styles(
         left=0,
         bottom=0,
-        margin=px(0, 0, 0, 0),
+        margin=px(-50, 0, 0, 0),
         width=percent(100),
         text_align="center",
         height="60px",
@@ -217,10 +217,10 @@ def main():
     if 'shape_id' not in st.session_state:
         st.session_state['shape_id'] = 0 # 0-sin 1-tri 2-trap 3-user
     shapes = [
-        ('sinusoidal ∿', 'sine.svg'),
-        ('triangular ⩠', 'tri.svg'),
-        ('trapzoidal ⎍', 'trap.svg'),
-        ('customize 🗀', 'user.svg')
+        ('Sinusoidal ∿', 'sine.svg'),
+        ('Triangular ⩠', 'tri.svg'),
+        ('Trapzoidal ⎍', 'trap.svg'),
+        ('Customize 🗀', 'user.svg')
         ]
 
     # Waveform parameters
@@ -310,8 +310,8 @@ def main():
             .main > div {
                 padding-left: 2rem;
                 padding-right: 1rem;
-                padding-top: 1.5rem;
-                padding-bottom: 0rem;
+                padding-top: 1.8rem;
+                padding-bottom: -1rem;
             }
 
         </style>
@@ -321,11 +321,11 @@ def main():
 
     # Define the layout 
     col1, col2, _, col3 ,_ = st.columns([1.25,1.3,0.15,1.2,0.1])  # First row
+    st.markdown("<div style='height:0.5vh;'></div>", unsafe_allow_html=True)
     col4, col5, _, col6 ,_ = st.columns([1.25,1.3,0.15,1.2,0.1])  # Second row
-    
     # First row 
     with col1:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation waveform [B] </span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation Waveform [B] </span>""",unsafe_allow_html=True)
 
         # ************************* Shape selector 
         col1_1, col1_2 = st.columns(2)
@@ -340,7 +340,7 @@ def main():
 
     with col3:
         st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
-        
+
         # ************************ Waveform parameters setting
         # layout setting 
         if st.session_state['shape_id'] == 0:
@@ -435,15 +435,15 @@ def main():
             uploaded_file = st.file_uploader("Resolution >= :red["+str(resolution_params[model])+" steps]", type=['csv'], help="Load user-defined flux excitation and :red[only read data in the 1st row].")
 
     with col4:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [F, T]</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # ************************ Frequency/Temperature setting
         col4_1, col4_2, _ = st.columns([0.9, 1.5, 0.12])
         with col4_1:
             st.markdown("<div ></div>", unsafe_allow_html=True)
-            Frequency = st.number_input("Frequency [kHz]", format="%d", value=100, step=1,min_value=10,max_value=450)
-            st.markdown("<div style='height:7vh;'></div>", unsafe_allow_html=True)
-            Temperature = st.number_input("Temperature [°C]", format="%d", value=25, step=1,min_value=25,max_value=90)
+            Frequency = st.number_input("Frequency, f [kHz]", format="%d", value=100, step=1,min_value=10,max_value=450)
+            st.markdown("<div style='height:3vw;'></div>", unsafe_allow_html=True)
+            Temperature = st.number_input("Temperature, T [°C]", format="%d", value=25, step=1,min_value=25,max_value=90)
         
         with col4_2:
             donut_chart_F = make_donut(Frequency, 'Frequency', 'blue', [50,450])
@@ -452,8 +452,8 @@ def main():
             st.altair_chart(donut_chart_T, use_container_width=True)
 
     with col2:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Time-domain response [B-H]</span>""",unsafe_allow_html=True)
-        
+        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Time-Domain Response [B-H]</span>""",unsafe_allow_html=True)
+
         #************************* Draw waveform 
         # Data loading 
         t = np.linspace(0, 0, resolution_params[model])
@@ -499,6 +499,7 @@ def main():
         
     with col5:
         st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""",unsafe_allow_html=True)
+
         df2 = pd.DataFrame(columns=['B','H'])
         df2['B'] = np.append(B, B[0])
         df2['H'] = np.append(H, H[0])
@@ -510,6 +511,7 @@ def main():
         
     with col6:
         st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss [Pv]</span>""",unsafe_allow_html=True)
+
         # ------------------------------------------------------ Show Pv
         custom_css = """
         .metric-container {
@@ -564,10 +566,10 @@ def main():
                     file_name='magnet-engine_prediction.csv',
                     use_container_width = True,
                     mime='text/csv',
-                    type="primary",
                 )
 
 
 if __name__ == "__main__":
     main()
     footer()
+

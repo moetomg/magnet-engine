@@ -331,7 +331,7 @@ def main():
             }
 
             [data-testid="column"]  [data-testid="stHorizontalBlock"]  [data-testid="column"]{
-                min-width: 2px !important;
+                min-width: 1px !important;
             }
         </style>
     """
@@ -347,7 +347,7 @@ def main():
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Waveform [B] </span>""",unsafe_allow_html=True)
 
         # ************************* Shape selector 
-        _, col1_1, col1_2 = st.columns([0.2,1,1]) 
+        _, col1_1, col1_2 = st.columns([0.15,1,1]) 
         for i, (label, icon_filename) in enumerate(shapes):
             with col1_1 if (i==0 or i==2) else col1_2:
                 icon_path = icon_folder / icon_filename
@@ -355,7 +355,7 @@ def main():
                     svg_code = file.read()    
                 if st.button(label):
                     st.session_state['shape_id'] = i
-                st.write(f'<div style="text-align: center; margin-right: calc(12vw - 90px);"><span style="display: inline-block; width: calc(4vw + 25px); height: calc(4vh + 60px); fill: #F5F5F5;">{svg_code}</span></div>', unsafe_allow_html=True)
+                st.write(f'<div style="text-align: left; margin-left:calc(40px - 1.5vw);"><span style="display: inline-block; width: calc(4vw + 25px); height: calc(4vh + 60px); fill: #F5F5F5;">{svg_code}</span></div>', unsafe_allow_html=True)
 
     with col3:
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
@@ -458,7 +458,7 @@ def main():
 
         # ************************ Frequency/Temperature setting
         #_,col4_1, _, col4_2, _ = st.columns([0.3, 1, 0.1, 1.5, 0.1])
-        _, col4_1, _, col4_2 = st.columns([0.25,1,0.25,1.4])
+        _, col4_1, _, col4_2 = st.columns([0.18,1.1,0.12,1.2])
         with col4_1:
             st.markdown("<div ></div>", unsafe_allow_html=True)
             Frequency = st.number_input("Frequency, f [kHz]", format="%d", value=100, step=1,min_value=10,max_value=450)
@@ -540,13 +540,14 @@ def main():
             padding: 0px; 
         }
         .metric-container h1 {
-            font-size: 4vw; 
+            font-size: calc(2vw + 2vh + 10px); 
             color: #f38612;  
             text-align: center;
+            padding-top: calc(1vw + 1vh);  
             padding-bottom: 0px;    
         }
         .metric-container p {
-            font-size: 1.2vw; 
+            font-size: calc(0.5vw + 0.5vh + 5px); 
             color: white;  
             text-align: center;
             padding-bottom: 1.2vw; 

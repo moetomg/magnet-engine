@@ -26,6 +26,15 @@ def list_material(folder):
             material_list.append(filename)
     return material_list
 
+@st.cache_resource
+def load_model(model,mdl_path,material):
+    if model == "Sydney":
+        mdl = SydneyModel(mdl_path,material)
+    elif model == "Paderborn":
+        mdl = PaderbornModel(mdl_path,material)
+    return mdl
+
+@st.cache_resource        
 def make_donut(input_response, input_text, input_color, range=[50,450]):
     if input_color == 'blue':
         chart_color = ['#29b5e8', '#155F7A']
@@ -178,7 +187,8 @@ def layout(*args):
             body(arg)
 
     st.markdown(str(foot), unsafe_allow_html=True)
-
+    
+@st.cache_data
 def footer():
     myargs = [
         "<b>Made with</b>: Python 3.11 ",
@@ -197,9 +207,11 @@ def footer():
     ]
     layout(*myargs)
 
+
 def main():
     # ------------------------------------------------------------------- Page configuration 
     # Set logo and name 
+
     st.set_page_config(
         page_title="MagNet Engine",
         page_icon="🧲",
@@ -218,9 +230,9 @@ def main():
         st.session_state['shape_id'] = 0 # 0-sin 1-tri 2-trap 3-user
     shapes = [
         ('Sinusoidal ∿', 'sine.svg'),
-        ('Triangular ⩠', 'tri.svg'),
-        ('Trapzoidal ⎍', 'trap.svg'),
-        ('Customize 🗀', 'user.svg')
+        ('Triangular △', 'tri.svg'),
+        ('Trapzoidal ☖', 'trap.svg'),
+        ('Customize 📄', 'user.svg')
         ]
 
     # Waveform parameters
@@ -232,11 +244,17 @@ def main():
         st.session_state['duty2'] = 0.3
     if 'phase' not in st.session_state:
         st.session_state['phase'] = 0
-    
+
     # ------------------------------------------------------------------- Side bar     
-    # set body margin 
+    # set body margin
     with st.sidebar:
-        st.title('🧲 MagNet Engine')
+        st.write("""
+        <div style='position: relative; top: -30px; margin-bottom: -30px;'>
+            <span style='font-size: calc(0.8vw + 0.8vh + 10px); text-decoration: none; font-weight: bold; text-align: left;'>
+                🧲 MagNet Engine
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 
         # Model and material selector 
         model = st.selectbox('Select a model', models, index=len(models)-1)
@@ -245,11 +263,8 @@ def main():
         material = st.selectbox('Target material', materials, index=len(materials)-1)
         mdl_path = folder+"/"+material+".pt"
         # Initialize the model 
-        if model == "Sydney":
-            mdl = SydneyModel(mdl_path,material)
-        elif model == "Paderborn":
-            mdl = PaderbornModel(mdl_path,material)
-        
+        mdl = load_model(model,mdl_path,material)
+
         # Seperator
         st.sidebar.markdown(
             """
@@ -302,6 +317,7 @@ def main():
             unsafe_allow_html=True)
         
         st.image("https://openday.sydney.edu.au/static/website/images/usyd-logo-white.png",caption="Powered by: Sydney University",use_column_width=True)
+
     # ------------------------------------------------------------------- main body  
 
     # set body margin 
@@ -314,21 +330,24 @@ def main():
                 padding-bottom: -1rem;
             }
 
+            [data-testid="column"]  [data-testid="stHorizontalBlock"]  [data-testid="column"]{
+                min-width: 10px !important;
+            }
         </style>
     """
-
     st.markdown(margins_css, unsafe_allow_html=True)
 
     # Define the layout 
-    col1, col2, _, col3 ,_ = st.columns([1.25,1.3,0.15,1.2,0.1])  # First row
+    col1, _, col2, _, col3 ,_ = st.columns([1.2,0.05,1.3,0.1,1.2,0.05])  # First row
     st.markdown("<div style='height:0.5vh;'></div>", unsafe_allow_html=True)
-    col4, col5, _, col6 ,_ = st.columns([1.25,1.3,0.15,1.2,0.1])  # Second row
+    col4, _, col5, _, col6 ,_ = st.columns([1.2,0.05,1.3,0.1,1.2,0.05])  # Second row
+
     # First row 
     with col1:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation Waveform [B] </span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Waveform [B] </span>""",unsafe_allow_html=True)
 
         # ************************* Shape selector 
-        col1_1, col1_2 = st.columns(2)
+        _, col1_1, col1_2 = st.columns([0.2,1,1]) 
         for i, (label, icon_filename) in enumerate(shapes):
             with col1_1 if (i==0 or i==2) else col1_2:
                 icon_path = icon_folder / icon_filename
@@ -336,10 +355,10 @@ def main():
                     svg_code = file.read()    
                 if st.button(label):
                     st.session_state['shape_id'] = i
-                st.write(f'<span style="display: inline-block; width: 45%; height: 50%; fill: #F5F5F5;margin-left: 0.8vw;">{svg_code}</span>', unsafe_allow_html=True)
+                st.write(f'<div style="text-align: center; margin-right: calc(12vw - 90px);"><span style="display: inline-block; width: calc(4vw + 25px); height: calc(4vh + 60px); fill: #F5F5F5;">{svg_code}</span></div>', unsafe_allow_html=True)
 
     with col3:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
 
         # ************************ Waveform parameters setting
         # layout setting 
@@ -348,8 +367,8 @@ def main():
         elif st.session_state['shape_id'] == 1:
             col3_1, col3_2, col3_3 = st.columns([1, 1, 1]) 
         elif st.session_state['shape_id'] == 2:
-            col3_1, col3_2, col3_3, col3_4 = st.columns([1, 1, 1, 1])            
-            
+            col3_1, col3_2, col3_3, col3_4 = st.columns([1, 1, 1, 1])           
+  
         # slider setting
         if st.session_state['shape_id'] != 3: 
             with col3_1:  
@@ -435,10 +454,10 @@ def main():
             uploaded_file = st.file_uploader("Resolution >= :red["+str(resolution_params[model])+" steps]", type=['csv'], help="Load user-defined flux excitation and :red[only read data in the 1st row].")
 
     with col4:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # ************************ Frequency/Temperature setting
-        col4_1, col4_2, _ = st.columns([0.9, 1.5, 0.12])
+        _,col4_1, _, col4_2, _ = st.columns([0.3, 1, 0.1, 1.5, 0.1])
         with col4_1:
             st.markdown("<div ></div>", unsafe_allow_html=True)
             Frequency = st.number_input("Frequency, f [kHz]", format="%d", value=100, step=1,min_value=10,max_value=450)
@@ -452,12 +471,12 @@ def main():
             st.altair_chart(donut_chart_T, use_container_width=True)
 
     with col2:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Time-Domain Response [B-H]</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Time-Domain Response [B-H]</span>""",unsafe_allow_html=True)
 
         #************************* Draw waveform 
         # Data loading 
-        t = np.linspace(0, 0, resolution_params[model])
-        B = np.linspace(0, 0, resolution_params[model])
+        t = 0
+        B = 0
         if st.session_state['shape_id'] == 0: 
             t = np.linspace(0, 1, resolution_params[model])
             B = st.session_state['amplitude']*np.sin((360*t+st.session_state['phase'])*np.pi/180)
@@ -498,7 +517,7 @@ def main():
         st.altair_chart(chart, use_container_width=True)
         
     with col5:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""",unsafe_allow_html=True)
 
         df2 = pd.DataFrame(columns=['B','H'])
         df2['B'] = np.append(B, B[0])
@@ -510,7 +529,7 @@ def main():
         st.altair_chart(chart2, use_container_width=True)
         
     with col6:
-        st.write("""<span style='font-size: 1.6vw; text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss [Pv]</span>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss [Pv]</span>""",unsafe_allow_html=True)
 
         # ------------------------------------------------------ Show Pv
         custom_css = """
@@ -540,17 +559,17 @@ def main():
             
             # Add gaps  
             st.markdown("<div style='height:2vh;'></div>", unsafe_allow_html=True)
-            _, col6_1 = st.columns([1.5,1])
+            _, col6_1 = st.columns([1.4,1])
             with col6_1:
                 # Disabled download button
                 text_contents = '''Error occurs during downloading'''
-                st.download_button("Download\n\n B-H Results", text_contents, type="primary",disabled=True)
+                st.download_button("Download\n\n 📂", text_contents, disabled=True)
         else: 
             st.markdown(f'<div class="metric-container"><h1>{round(P/1000,2)}</h1><p>kW/m³</p></div>', unsafe_allow_html=True)
             
             # Add gaps  
             st.markdown("<div style='height:2vh;'></div>", unsafe_allow_html=True)
-            _, col6_1 = st.columns([1.5,1])
+            _, col6_1 = st.columns([1.4,1])
             with col6_1:
                 # Create the csv file to B, H, Pv 
                 df3 = pd.DataFrame(columns=['B [mT]','H [A/m]','Pv [W/m3]'])
@@ -560,7 +579,7 @@ def main():
                 csv = df3.to_csv()
                 st.download_button(
                     #label=":orange[Download]\n\n :orange[B-H Results]",
-                    label="Download\n\n B-H Results",
+                    label="Download 📂",
                     help="Download B-H-Pv in "+str(resolution_params[model])+ " step as CSV",
                     data=csv.encode('utf-8'),
                     file_name='magnet-engine_prediction.csv',

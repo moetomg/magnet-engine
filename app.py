@@ -232,7 +232,7 @@ def main():
         ('Sinusoidal ∿', 'sine.svg'),
         ('Triangular △', 'tri.svg'),
         ('Trapzoidal ☖', 'trap.svg'),
-        ('Customize 📄', 'user.svg')
+        ('Customize  ✐', 'user.svg')
         ]
 
     # Waveform parameters
@@ -331,7 +331,7 @@ def main():
             }
 
             [data-testid="column"]  [data-testid="stHorizontalBlock"]  [data-testid="column"]{
-                min-width: 10px !important;
+                min-width: 2px !important;
             }
         </style>
     """
@@ -457,7 +457,8 @@ def main():
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # ************************ Frequency/Temperature setting
-        _,col4_1, _, col4_2, _ = st.columns([0.3, 1, 0.1, 1.5, 0.1])
+        #_,col4_1, _, col4_2, _ = st.columns([0.3, 1, 0.1, 1.5, 0.1])
+        _, col4_1, _, col4_2 = st.columns([0.25,1,0.25,1.4])
         with col4_1:
             st.markdown("<div ></div>", unsafe_allow_html=True)
             Frequency = st.number_input("Frequency, f [kHz]", format="%d", value=100, step=1,min_value=10,max_value=450)
@@ -475,8 +476,8 @@ def main():
 
         #************************* Draw waveform 
         # Data loading 
-        t = 0
-        B = 0
+        t = np.linspace(0, 0, resolution_params[model])
+        B = np.linspace(0, 0, resolution_params[model])
         if st.session_state['shape_id'] == 0: 
             t = np.linspace(0, 1, resolution_params[model])
             B = st.session_state['amplitude']*np.sin((360*t+st.session_state['phase'])*np.pi/180)

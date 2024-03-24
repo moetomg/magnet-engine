@@ -266,7 +266,7 @@ class MMINet(nn.Module):
 
         # Return results 
         if return_h_sequence:
-            H = savgol_filter(H.detach().to("cpu").numpy(), window_length=5, polyorder=2,axis=1)
+            H = savgol_filter(H.detach().to("cpu").numpy(), window_length=7, polyorder=2,axis=1)
             H = torch.from_numpy(H).view(batch_size,-1,1)
             real_H = torch.cat((H[:,-self.n_init:,:],H[:,:-self.n_init,:]),dim=1)
             return torch.flatten(Pv).cpu(),torch.flatten(real_H).numpy()

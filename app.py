@@ -1,16 +1,9 @@
 import os
-import pandas as pd
 import altair as alt 
-import numpy as np
-from pathlib import Path
+from pandas import DataFrame
 
 import streamlit as st
-import streamlit_vertical_slider as svs
-from htbuilder.units import percent, px
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
-
-from Sydney.Sydney import SydneyModel 
-from Paderborn.Paderborn import PaderbornModel
 
 alt.themes.enable("dark")
 
@@ -29,8 +22,10 @@ def list_material(folder):
 @st.cache_resource
 def load_model(model,mdl_path,material):
     if model == "Sydney":
+        from Sydney.Sydney import SydneyModel 
         mdl = SydneyModel(mdl_path,material)
     elif model == "Paderborn":
+        from Paderborn.Paderborn import PaderbornModel
         mdl = PaderbornModel(mdl_path,material)
     return mdl
 
@@ -49,11 +44,11 @@ def make_donut(input_response, input_text, input_color, range=[50,450]):
     
     ratio = round((input_response-range[0])/(range[1]-range[0])*100)
 
-    source = pd.DataFrame({
+    source = DataFrame({
         "Topic": ['', input_text],
         "% value": [100-ratio, ratio]
     })
-    source_bg = pd.DataFrame({
+    source_bg = DataFrame({
         "Topic": ['', input_text],
         "% value": [100, 0]
     })
@@ -97,7 +92,7 @@ def generateTriSequence(time,amplitude, phase, duty):
             else:
                 yData.append(-amplitude + (time[i]-phase/360)*(2*amplitude)/duty)
                     
-    return np.array(yData)
+    return yData
 
 def generateTrapSequence(time,amplitude, phase, duty1, duty2):
     yData = []
@@ -149,7 +144,7 @@ def generateTrapSequence(time,amplitude, phase, duty1, duty2):
                 yData.append(-amplitude)
             else:
                 yData.append(-amplitude+(time[i]-phase/360)*(2*amplitude)/duty1)
-    return np.array(yData)        
+    return yData       
         
 # ----------------------------------------------------------------------- footer 
 def image(src_as_string, **style):
@@ -157,8 +152,26 @@ def image(src_as_string, **style):
 
 def link(link, text, **style):
     return a(_href=link, _target="_blank", style=styles(**style))(text)
+    
+@st.cache_data
+def footer():
+    from htbuilder.units import percent, px
 
-def layout(*args):
+    myargs = [
+        "<b>Made with</b>: Python 3.11 ",
+        link("https://www.python.org/", image('https://i.imgur.com/ml09ccU.png',
+        	width=px(18), height=px(18), margin= "0em")),
+        ", Streamlit ",
+        link("https://streamlit.io/", image('https://docs.streamlit.io/logo.svg',
+        	width=px(24), height=px(25), margin= "0em")),
+        ", Docker ",
+        link("https://www.docker.com/", image('https://upload.wikimedia.org/wikipedia/commons/e/ea/Docker_%28container_engine%29_logo_%28cropped%29.png',
+              width=px(20), height=px(18), margin= "0em")),
+        " and Google APP Engine ",
+        link("https://cloud.google.com/appengine", image('https://lh3.ggpht.com/_uP6bUdDOWGS6ICpMH7dBAy5LllYc_bBjjXI730L3FQ64uS1q4WltHnse7rgpKiInog2LYM1',
+              width=px(19), height=px(19), margin= "0em", align="top")),
+        br(),
+    ]
     style = """
     <style>
       # MainMenu {visibility: hidden;}
@@ -180,32 +193,13 @@ def layout(*args):
     foot = div(style=style_div)(hr(style=style_hr), body)
     st.markdown(style, unsafe_allow_html=True)
 
-    for arg in args:
+    for arg in myargs:
         if isinstance(arg, str):
             body(arg)
         elif isinstance(arg, HtmlElement):
             body(arg)
 
     st.markdown(str(foot), unsafe_allow_html=True)
-    
-@st.cache_data
-def footer():
-    myargs = [
-        "<b>Made with</b>: Python 3.11 ",
-        link("https://www.python.org/", image('https://i.imgur.com/ml09ccU.png',
-        	width=px(18), height=px(18), margin= "0em")),
-        ", Streamlit ",
-        link("https://streamlit.io/", image('https://docs.streamlit.io/logo.svg',
-        	width=px(24), height=px(25), margin= "0em")),
-        ", Docker ",
-        link("https://www.docker.com/", image('https://upload.wikimedia.org/wikipedia/commons/e/ea/Docker_%28container_engine%29_logo_%28cropped%29.png',
-              width=px(20), height=px(18), margin= "0em")),
-        " and Google APP Engine ",
-        link("https://cloud.google.com/appengine", image('https://lh3.ggpht.com/_uP6bUdDOWGS6ICpMH7dBAy5LllYc_bBjjXI730L3FQ64uS1q4WltHnse7rgpKiInog2LYM1',
-              width=px(19), height=px(19), margin= "0em", align="top")),
-        br(),
-    ]
-    layout(*myargs)
 
 
 def main():
@@ -220,7 +214,7 @@ def main():
 
     directory = os.getcwd()
     models = list_models(directory)
-    icon_folder = Path("icons")
+    icon_folder = os.path.join(directory, "icons")
     # ------------------------------------------------------------------- Parameters init
     resolution_params = {
                 "Sydney": 128,
@@ -350,7 +344,7 @@ def main():
         _, col1_1, col1_2 = st.columns([0.15,1,1]) 
         for i, (label, icon_filename) in enumerate(shapes):
             with col1_1 if (i==0 or i==2) else col1_2:
-                icon_path = icon_folder / icon_filename
+                icon_path = os.path.join(icon_folder, icon_filename)
                 with open(icon_path, "r") as file:
                     svg_code = file.read()    
                 if st.button(label):
@@ -358,6 +352,8 @@ def main():
                 st.write(f'<div style="text-align: left; margin-left:calc(40px - 1.5vw);"><span style="display: inline-block; width: calc(4vw + 25px); height: calc(4vh + 60px); fill: #F5F5F5;">{svg_code}</span></div>', unsafe_allow_html=True)
 
     with col3:
+        import streamlit_vertical_slider as svs
+
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""",unsafe_allow_html=True)
 
         # ************************ Waveform parameters setting
@@ -472,38 +468,40 @@ def main():
             st.altair_chart(donut_chart_T, use_container_width=True)
 
     with col2:
+        from numpy import array, linspace, genfromtxt, arange, append, sin, pi
+        
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Time-Domain Response [B-H]</span>""",unsafe_allow_html=True)
 
         #************************* Draw waveform 
         # Data loading 
-        t = np.linspace(0, 0, resolution_params[model])
-        B = np.linspace(0, 0, resolution_params[model])
+        t = linspace(0, 0, resolution_params[model])
+        B = linspace(0, 0, resolution_params[model])
         if st.session_state['shape_id'] == 0: 
-            t = np.linspace(0, 1, resolution_params[model])
-            B = st.session_state['amplitude']*np.sin((360*t+st.session_state['phase'])*np.pi/180)
+            t = linspace(0, 1, resolution_params[model])
+            B = st.session_state['amplitude']*sin((360*t+st.session_state['phase'])*pi/180)
         elif st.session_state['shape_id'] == 1:
-            t = np.linspace(0, 1, resolution_params[model])
-            B = generateTriSequence(t,st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty'])
+            t = linspace(0, 1, resolution_params[model])
+            B = array(generateTriSequence(t,st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty']))
         elif st.session_state['shape_id'] == 2:  
-            t = np.linspace(0, 1, resolution_params[model])  
-            B = generateTrapSequence(t,st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty'], st.session_state['duty2'])
+            t = linspace(0, 1, resolution_params[model])  
+            B = array(generateTrapSequence(t,st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty'], st.session_state['duty2']))
         else: 
             if uploaded_file is not None: 
-                t = np.linspace(0, 1, resolution_params[model])  
-                first_row = np.genfromtxt(uploaded_file, delimiter=',', max_rows=1)
-                index = [int(x) for x in np.arange(0, len(first_row)-1, (len(first_row)-1)/ resolution_params[model])]
-                B = np.array(first_row[index].tolist())*1000  # convert to mT
+                t = linspace(0, 1, resolution_params[model])  
+                first_row = genfromtxt(uploaded_file, delimiter=',', max_rows=1)
+                index = [int(x) for x in arange(0, len(first_row)-1, (len(first_row)-1)/ resolution_params[model])]
+                B = array(first_row[index].tolist())*1000  # convert to mT
        
         # Predict H and Pv 
         
         if sum(B) == 0:
-            H  = np.linspace(0, 0, resolution_params[model])
+            H  = linspace(0, 0, resolution_params[model])
         else:
             P ,H = mdl(B/1000,Frequency*1000,Temperature) # convert to B in [T], f in [Hz]
             H = H.squeeze()
 
         # Plot setting  
-        df = pd.DataFrame(columns=['t', 'B','H'])
+        df = DataFrame(columns=['t', 'B','H'])
         df['t'] = t
         df['B'] = B
         df['H'] = H
@@ -520,11 +518,11 @@ def main():
     with col5:
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""",unsafe_allow_html=True)
 
-        df2 = pd.DataFrame(columns=['B','H'])
-        df2['B'] = np.append(B, B[0])
-        df2['H'] = np.append(H, H[0])
+        df2 = DataFrame(columns=['B','H'])
+        df2['B'] = append(B, B[0])
+        df2['H'] = append(H, H[0])
         chart2 = alt.Chart(df2).mark_line(strokeWidth=5,stroke='#29b5e8').encode(
-            x=alt.X('H',title='H [A/m]', axis=alt.Axis(titlePadding=5,titleFontWeight='bold',grid=True), sort=None,scale=alt.Scale(domain=(round(np.min(H)-0.05*(np.max(H)-np.min(H))), round(np.max(H)+0.05*(np.max(H)-np.min(H)))))),
+            x=alt.X('H',title='H [A/m]', axis=alt.Axis(titlePadding=5,titleFontWeight='bold',grid=True), sort=None,scale=alt.Scale(domain=(round(min(H)-0.05*(max(H)-min(H))), round(max(H)+0.05*(max(H)-min(H)))))),
             y=alt.Y('B',title='B [mT]', axis=alt.Axis(titlePadding=0,titleFontWeight='bold',grid=True)), 
         ).properties(height=330)
         st.altair_chart(chart2, use_container_width=True)
@@ -574,7 +572,7 @@ def main():
             _, col6_1 = st.columns([1.4,1])
             with col6_1:
                 # Create the csv file to B, H, Pv 
-                df3 = pd.DataFrame(columns=['B [mT]','H [A/m]','Pv [W/m3]'])
+                df3 = DataFrame(columns=['B [mT]','H [A/m]','Pv [W/m3]'])
                 df3['B [mT]'] = B
                 df3['H [A/m]'] = H
                 df3['Pv [W/m3]'] = [P] + [None] * (len(B) - 1)

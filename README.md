@@ -72,15 +72,17 @@ class SydneyModel:
     """
     pass
 ```
-3. Name the trained model file with the name of the corresponding material, and place all files in a folder named "models".
-- Main Folder
-  - Sydney.py
-  - models
-    - 77
-    - 78
-    - ...
-4. Make sure each of your models runs correctly.
-5. Finally, zip your folder, or upload it to a public github responsitory.
+3. Name the trained model files with the corresponding materials, and place all files in a sub-folder named "models". Folder structure follows: 
+  ### 
+    .
+    ├── models                  # Model files     
+    │   ├── 77.pt          
+    │   ├── 78.pt         
+    │   └── ...               
+    └── Sydney.py               # Main file 
+
+5. Make sure each of your models runs correctly.
+6. Finally, zip your folder, or upload it to a public github responsitory.
 
 For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 
 

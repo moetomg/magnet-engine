@@ -1,7 +1,5 @@
 import torch
 import numpy as np
-import torch.nn as nn
-from torch.autograd import Variable 
 from scipy.signal import savgol_filter
 
 # Material normalization data (1.B 2.H 3.F 4.T 5.dB/dt)
@@ -182,7 +180,7 @@ class SydneyModel:
     
 
 # %% Magnetization mechansim-determined neural network
-class MMINet(nn.Module):
+class MMINet(torch.nn.Module):
 
     """
      Parameters:
@@ -206,9 +204,9 @@ class MMINet(nn.Module):
 
         # Consturct the network 
         self.rnn1 = StopOperatorCell(self.operator_size)
-        self.dnn1 = nn.Linear(self.operator_size+2,1)
+        self.dnn1 = torch.nn.Linear(self.operator_size+2,1)
         self.rnn2 = EddyCell(4,self.hidden_size,output_size)
-        self.dnn2 = nn.Linear(self.hidden_size,1)
+        self.dnn2 = torch.nn.Linear(self.hidden_size,1)
 
         self.rnn2_hx = None
 
@@ -244,7 +242,7 @@ class MMINet(nn.Module):
             if t==0:
                 H_eddy_init = x[:,t,0:1]-H_hyst_pred
                 buffer = x.new_ones(x.size(0),self.hidden_size)
-                self.rnn2_hx = Variable((buffer/torch.sum(self.dnn2.weight,dim=1))*H_eddy_init)
+                self.rnn2_hx = torch.autograd.Variable((buffer/torch.sum(self.dnn2.weight,dim=1))*H_eddy_init)
 
             self.rnn2_hx = self.rnn2(rnn2_in, self.rnn2_hx)
 
@@ -300,7 +298,7 @@ class StopOperatorCell():
         return output.float()
   
 # %% MMINN subsubnetwork: Dynamic hysteresis prediction
-class EddyCell(nn.Module):
+class EddyCell(torch.nn.Module):
 
     """ 
       Parameters:
@@ -315,8 +313,8 @@ class EddyCell(nn.Module):
         self.hidden_size = hidden_size
         self.output_size = output_size
 
-        self.x2h = nn.Linear(input_size, hidden_size ,bias=False)
-        self.h2h = nn.Linear(hidden_size, hidden_size ,bias=False)
+        self.x2h = torch.nn.Linear(input_size, hidden_size ,bias=False)
+        self.h2h = torch.nn.Linear(hidden_size, hidden_size ,bias=False)
 
     def forward(self, x, hidden=None):
         """

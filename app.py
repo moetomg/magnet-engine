@@ -5,8 +5,6 @@ from pandas import DataFrame
 import streamlit as st
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
-alt.themes.enable("dark")
-
 def list_models(directory):
     models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git" and folder != ".streamlit"]
     return models
@@ -336,6 +334,9 @@ def main():
     st.markdown("<div style='height:0.5vh;'></div>", unsafe_allow_html=True)
     col4, _, col5, _, col6 ,_ = st.columns([1.2,0.05,1.3,0.1,1.2,0.05])  # Second row
 
+    # Setting themes
+    alt.themes.enable("dark")
+    
     # First row 
     with col1:
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Waveform [B] </span>""",unsafe_allow_html=True)

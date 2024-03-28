@@ -66,4 +66,39 @@ For any inquiries or support, please contact sinan.li@sydney.edu.au
 - [MagNet-AI Platform](https://mag-net.princeton.edu/) - maintained by Princeton University
 - [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub) - maintained by Paderborn University
 
+## Collaboration 
+We're always open to collaborating with anyone interesting in this project. If you would like to display your model in "magnet-engine", please follow the steps below to set up your model. This will helps us better integrate your models into the "magnet-engine" GUI.
 
+1. Define your model as a <ins>class</ins> in a .py file, naming it [team]Model (e.g., SydneyModel in Sydney.py file)
+2. The class should have a constructor and can be invoked as a function. 
+```r
+class SydneyModel:
+  # Initialized with the path of the well-trained model and targeted model 
+  def __init__(self, mdl_path, material):
+     """
+     Parameters:
+      - mdl_path: the path to the trained model file
+      - material: target material name (e.g., 77, 78, 79)
+    """
+    pass
+  def __call__(self, data_B, data_F, data_T, return_h_sequence=True):
+    """
+     Parameters:
+      - data_B: the flux density sequence in nd.array format
+      - data_F: the operating frequency in list (one set prediction)/ nd.array (one batch prediction)
+      - data_T: the operating temperature in list (one set prediction)/ nd.array (one batch prediction)
+      - return_h_sequence: a boolean variable tell whether the function return H sequence (optional)
+    """
+    pass
+```
+3. Name the trained model file with the name of the corresponding material, and place all files in a folder named "models".
+- Main Folder
+  - Sydney.py
+  - models
+    - 77
+    - 78
+    - ...
+4. Make sure each of your models runs correctly.
+5. Finally, zip your folder, or upload it to a public github responsitory.
+
+For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 

@@ -47,16 +47,6 @@ Replace
 - ['frequency'] with the operating frequency in Hz. (50-450e3 Hz)
 - ['temperature'] with the operating temperature in °C.
 
-## Installation 
-There is no installation required for this web-based GUI. Simply access it through your web browser using the provided link.
-
-## License 
-This project is licensed under the [MIT License](https://opensource.org/license/mit).
-
-## Acknowledgements
-- This project utilizes the Magnet Challenge 2023 competition model.
-- We thank the power electronics community for their invaluable contributions to the libraries and tools used in this project.
-
 ## Collaboration 
 We're always open to collaborating with anyone interesting in this project. If you would like to display your model in "magnet-engine", please follow the steps below to set up your model. This will helps us better integrate your models into the "magnet-engine" GUI.
 
@@ -93,6 +83,16 @@ class SydneyModel:
 5. Finally, zip your folder, or upload it to a public github responsitory.
 
 For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 
+
+## Installation 
+There is no installation required for this web-based GUI. Simply access it through your web browser using the provided link.
+
+## License 
+This project is licensed under the [MIT License](https://opensource.org/license/mit).
+
+## Acknowledgements
+- This project utilizes the Magnet Challenge 2023 competition model.
+- We thank the power electronics community for their invaluable contributions to the libraries and tools used in this project.
 
 ## Contact
 For any inquiries or support, please contact sinan.li@sydney.edu.au

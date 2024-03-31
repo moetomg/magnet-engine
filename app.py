@@ -1,21 +1,22 @@
-import os
 import altair as alt 
+from os import getcwd
+from os.path import join
 from pandas import DataFrame
 
 import streamlit as st
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
-def list_models(directory):
-    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git" and folder != ".streamlit"]
-    return models
+#def list_models(directory):
+#    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git" and folder != ".streamlit"]
+#    return models
 
-def list_material(folder):
-    material_list = []
-    if os.path.exists(folder) and os.path.isdir(folder):
-        for file in os.listdir(folder):
-            filename, _ = os.path.splitext(file)
-            material_list.append(filename)
-    return material_list
+#def list_material(folder):
+#    material_list = []
+#    if os.path.exists(folder) and os.path.isdir(folder):
+#        for file in os.listdir(folder):
+#            filename, _ = os.path.splitext(file)
+#            material_list.append(filename)
+#    return material_list
 
 @st.cache_resource
 def load_model(model,mdl_path,material):
@@ -210,16 +211,22 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded")
 
-    directory = os.getcwd()
-    models = list_models(directory)
-    icon_folder = os.path.join(directory, "icons")
+    directory = getcwd()
+    icon_folder = join(directory, "icons")
     # ------------------------------------------------------------------- Parameters init
+    
+    models = ['Paderborn','Sydney']
+    materials = ['3C90','3C92','3C94','3C95','3E6' ,
+                 '3F4' ,'77'  ,'78'  ,'79'  ,'ML95S',
+                 'N27' ,'N30' ,'N49' ,'N87' ,'T37']
     resolution_params = {
                 "Sydney": 128,
                 "Paderborn": 1024,    
-            }
+            } # Model resolution 
+    
     if 'shape_id' not in st.session_state:
         st.session_state['shape_id'] = 0 # 0-sin 1-tri 2-trap 3-user
+   
     shapes = [
         ('Sinusoidal ∿', 'sine.svg'),
         ('Triangular △', 'tri.svg'),
@@ -250,8 +257,7 @@ def main():
 
         # Model and material selector 
         model = st.selectbox('Select a model', models, index=len(models)-1)
-        folder = os.path.join(directory, model, "models")
-        materials = list_material(folder)
+        folder = join(directory, model, "models")
         material = st.selectbox('Target material', materials, index=len(materials)-1)
         mdl_path = folder+"/"+material+".pt"
         # Initialize the model 
@@ -345,7 +351,7 @@ def main():
         _, col1_1, col1_2 = st.columns([0.15,1,1]) 
         for i, (label, icon_filename) in enumerate(shapes):
             with col1_1 if (i==0 or i==2) else col1_2:
-                icon_path = os.path.join(icon_folder, icon_filename)
+                icon_path = join(icon_folder, icon_filename)
                 with open(icon_path, "r") as file:
                     svg_code = file.read()    
                 if st.button(label):

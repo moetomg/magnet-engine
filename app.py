@@ -6,18 +6,6 @@ from pandas import DataFrame
 import streamlit as st
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
-#def list_models(directory):
-#    models = [folder for folder in os.listdir(directory) if os.path.isdir(os.path.join(directory, folder)) and folder != "icons" and folder != ".git" and folder != ".streamlit"]
-#    return models
-
-#def list_material(folder):
-#    material_list = []
-#    if os.path.exists(folder) and os.path.isdir(folder):
-#        for file in os.listdir(folder):
-#            filename, _ = os.path.splitext(file)
-#            material_list.append(filename)
-#    return material_list
-
 @st.cache_resource
 def load_model(model,mdl_path,material):
     if model == "Sydney":
@@ -469,7 +457,7 @@ def main():
             Temperature = st.number_input("Temperature, T [°C]", format="%d", value=25, step=1,min_value=25,max_value=90)
         
         with col4_2:
-            donut_chart_F = make_donut(Frequency, 'Frequency', 'blue', [50,450])
+            donut_chart_F = make_donut(Frequency, 'Frequency', 'blue', [10,450])
             st.altair_chart(donut_chart_F, use_container_width=True)
             donut_chart_T = make_donut(Temperature, 'Temperature', 'red', [25,90])
             st.altair_chart(donut_chart_T, use_container_width=True)

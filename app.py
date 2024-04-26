@@ -62,6 +62,7 @@ def make_donut(input_response, input_text, input_color, range=[50,450]):
 
 def generateTriSequence(time,amplitude, phase, duty):
     yData = []
+    phase = (-phase-duty*180) % 360
     for i in range(len(time)): 
         if duty+phase/360 <=1:
             if time[i]<=phase/360:
@@ -83,6 +84,7 @@ def generateTriSequence(time,amplitude, phase, duty):
 
 def generateTrapSequence(time,amplitude, phase, duty1, duty2):
     yData = []
+    phase = (-phase-duty1*180) % 360
     for i in range(len(time)):
         if phase/360<=(1-duty1-duty2)/2:
             if time[i]<=phase/360:

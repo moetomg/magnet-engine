@@ -1,5 +1,7 @@
-"""Source:
-https://github.com/upb-lea/hardcore-magnet-challenge
+"""
+File contains the model according to the Paderborn University approach for the magnet challenge.
+
+Source: https://github.com/upb-lea/hardcore-magnet-challenge
 """
 
 import numpy as np
@@ -32,7 +34,7 @@ MAT_CONST_B_MAX = {
 }  # in T
 MAT_CONST_H_MAX = {
     "3C90": 84.7148502254261,
-    "3C94": 64.8575649838852,  
+    "3C94": 64.8575649838852,
     "3E6": 74.1579701817075,
     "3F4": 150,
     "77": 86.5681744566843,
@@ -187,7 +189,7 @@ NORM_DENOM = {
     },
 }
 
-MODEL_PATHS = {
+MAT2FILENAME = {
     "3C90": "cnn_3C90_experiment_1b4d8_model_f3915868_seed_0_fold_0.pt",
     "3C92": "cnn_3C92_experiment_ea1fe_model_72510647_seed_0_fold_0.pt",
     "3C94": "cnn_3C94_experiment_56441_model_55693612_seed_0_fold_0.pt",
@@ -208,6 +210,8 @@ MODEL_PATHS = {
 
 def form_factor(x):
     """
+    Calculate the form factor.
+
     definition:      kf = rms(x) / mean(abs(x))
     for ideal sine:  np.pi/(2*np.sqrt(2))
     """
@@ -216,6 +220,8 @@ def form_factor(x):
 
 def crest_factor(x):
     """
+    Calculate the crest factor.
+
     definition:      kc = rms(x) / max(x)
     for ideal sine:  np.sqrt(2)
     """
@@ -224,6 +230,8 @@ def crest_factor(x):
 
 def bool_filter_sine(b, rel_kf=0.01, rel_kc=0.01, rel_0_dev=0.1):
     """
+    Bool classification for sinusoidal waveforms, used by function get_waveform_est.
+
     b: input flux density (nxm)-array with n m-dimensional flux density waveforms
     rel_kf: (allowed) relative deviation of the form factor for sine classification
     rel_kc: (allowed) relative deviation of the crest factor for sine classification
@@ -253,6 +261,7 @@ def bool_filter_sine(b, rel_kf=0.01, rel_kc=0.01, rel_0_dev=0.1):
 
 
 def bool_filter_triangular(b, rel_kf=0.005, rel_kc=0.005):
+    """Bool classification for triangular waveforms, used by function get_waveform_est."""
     kf_triangular = 2 / np.sqrt(3)
     kc_triangular = np.sqrt(3)
 
@@ -275,20 +284,22 @@ def bool_filter_triangular(b, rel_kf=0.005, rel_kc=0.005):
 
 
 def get_waveform_est(full_b):
-    """From Till's tp-1.4.7.3.1 NB, return waveform class.
+    """
+    Classify the waveforms into [other, square, triangular, sine].
+
+    From Till's tp-1.4.7.3.1 NB, return waveform class.
     Postprocessing from wk-1.1-EDA NB.
 
     Return class estimate 'k', where [0, 1, 2, 3] corresponds to
-    [other, square, triangular, sine]"""
-
+    [other, square, triangular, sine].
+    """
     # labels init all with 'other'
     k = np.zeros(full_b.shape[0], dtype=int)
 
     # square
     k[
         np.all(
-            np.abs(full_b[:, 250:500:50] - full_b[:, 200:450:50])
-            / np.max(np.abs(full_b), axis=1, keepdims=True)
+            np.abs(full_b[:, 250:500:50] - full_b[:, 200:450:50]) / np.max(np.abs(full_b), axis=1, keepdims=True)
             < 0.05,
             axis=1,
         )
@@ -307,22 +318,14 @@ def get_waveform_est(full_b):
     other_b /= np.abs(other_b).max(axis=1, keepdims=True)
     other_b_ft = np.abs(np.fft.fft(other_b, axis=1))
     other_b_ft /= other_b_ft.max(axis=1, keepdims=True)
-    msk_of_newly_identified_sines = np.all(
-        (other_b_ft[:, 3:10] < 0.03) & (other_b_ft[:, [2]] < 0.2), axis=1
+    msk_of_newly_identified_sines = np.all((other_b_ft[:, 3:10] < 0.03) & (other_b_ft[:, [2]] < 0.2), axis=1)
+    msk_of_newly_identified_triangs = np.all(((other_b_ft[:, 1:8] - other_b_ft[:, 2:9]) > 0), axis=1) | np.all(
+        ((other_b_ft[:, 1:8:2] > 1e-2) & (other_b_ft[:, 2:9:2] < 1e-2)), axis=1
     )
-    msk_of_newly_identified_triangs = np.all(
-        ((other_b_ft[:, 1:8] - other_b_ft[:, 2:9]) > 0), axis=1
-    ) | np.all(((other_b_ft[:, 1:8:2] > 1e-2) & (other_b_ft[:, 2:9:2] < 1e-2)), axis=1)
-    msk_of_newly_identified_triangs = (
-        msk_of_newly_identified_triangs & ~msk_of_newly_identified_sines
-    )
-    msk_of_newly_identified_squares = np.all(
-        (other_b_ft[:, 1:4:2] > 1e-2) & (other_b_ft[:, 2:5:2] < 1e-3), axis=1
-    )
+    msk_of_newly_identified_triangs = msk_of_newly_identified_triangs & ~msk_of_newly_identified_sines
+    msk_of_newly_identified_squares = np.all((other_b_ft[:, 1:4:2] > 1e-2) & (other_b_ft[:, 2:5:2] < 1e-3), axis=1)
     msk_of_newly_identified_squares = (
-        msk_of_newly_identified_squares
-        & ~msk_of_newly_identified_sines
-        & ~msk_of_newly_identified_triangs
+        msk_of_newly_identified_squares & ~msk_of_newly_identified_sines & ~msk_of_newly_identified_triangs
     )
     idx_sines = np.arange(k.size)[k == 0][msk_of_newly_identified_sines]
     idx_triangs = np.arange(k.size)[k == 0][msk_of_newly_identified_triangs]
@@ -334,8 +337,7 @@ def get_waveform_est(full_b):
 
 
 def engineer_features(b_seq, freq, temp, material):
-    """Add engineered features to data set"""
-
+    """Add engineered features to data set."""
     match b_seq:
         case str():
             raise NotImplementedError("b_seq must be an array-like yet")
@@ -347,27 +349,11 @@ def engineer_features(b_seq, freq, temp, material):
                 case 2:
                     pass
                 case _:
-                    raise ValueError(
-                        f"Expected b_seq to have either one or two dimensions, but is has {b_seq.ndim}."
-                    )
+                    raise ValueError(f"Expected b_seq to have either one or two dimensions, but is has {b_seq.ndim}.")
         case list() | tuple():
             b_seq = np.array(b_seq)
         case _:
-            raise ValueError(
-                f"Type of b_seq={type(b_seq)} nut supported. Please provide as np.ndarray or list"
-            )
-
-    # maybe resample b_seq to 1024 samples
-    if b_seq.shape[-1] != L:
-        actual_len = b_seq.shape[-1]
-        query_points = np.arange(L)
-        support_points = np.arange(actual_len) * L / actual_len
-        b_seq = np.row_stack(
-            [
-                np.interp(query_points, support_points, b_seq[i])
-                for i in range(b_seq.shape[0])
-            ]
-        )
+            raise ValueError(f"Type of b_seq={type(b_seq)} nut supported. Please provide as np.ndarray or list")
 
     waveforms = get_waveform_est(b_seq)
     waveforms_df = pd.DataFrame(
@@ -416,9 +402,13 @@ def construct_tensor_seq2seq(
     ln_ploss_std=1,
     training_data=True,
 ):
-    """Generate tensors with following shapes:
-    For time series tensors (#time steps, #profiles/periods, #features),
-    for scalar tensors (#profiles, #features)"""
+    """
+    Generate tensors.
+
+    Shapes as following:
+     - For time series tensors (#time steps, #profiles/periods, #features),
+     - for scalar tensors (#profiles, #features).
+    """
     full_b = df.loc[:, ALL_B_COLS].to_numpy()
     if training_data:
         full_h = df.loc[:, ALL_H_COLS].to_numpy()
@@ -436,9 +426,7 @@ def construct_tensor_seq2seq(
     orig_freq = X.loc[:, ["freq"]].copy().to_numpy()
     X.loc[:, ["temp", "freq"]] /= np.array([75.0, FREQ_SCALE], dtype=np.float32)
     X.loc[:, "freq"] = np.log(X.freq)
-    other_cols = [
-        c for c in x_cols if c not in ["temp", "freq"] and not c.startswith("wav_")
-    ]
+    other_cols = [c for c in x_cols if c not in ["temp", "freq"] and not c.startswith("wav_")]
     for other_col in other_cols:
         X.loc[:, other_col] /= NORM_DENOM[mat][other_col]
 
@@ -472,14 +460,10 @@ def construct_tensor_seq2seq(
             ),
             torch.tensor(tantan_b.T[..., np.newaxis], dtype=torch.float32),
         ]
-    tens_l += [
-        torch.tensor(full_b.T[..., np.newaxis], dtype=torch.float32)
-    ]  # b field is penultimate column
+    tens_l += [torch.tensor(full_b.T[..., np.newaxis], dtype=torch.float32)]  # b field is penultimate column
     if training_data:
         tens_l += [
-            torch.tensor(
-                full_h.T[..., np.newaxis], dtype=torch.float32
-            ),  # target is last column
+            torch.tensor(full_h.T[..., np.newaxis], dtype=torch.float32),  # target is last column
         ]
 
     # return ts tensor with shape: (#time steps, #profiles, #features), and scalar tensor with (#profiles, #features)
@@ -513,25 +497,23 @@ class PaderbornModel:
 
         Args
         ----
-        b_seq: (B, T) array_like
-            The magnetic flux density array(s). First dimension describes the batch, the second
+        b_seq: (X, Y) array_like
+            The magnetic flux density array(s) in T. First dimension X describes the batch, the second Y
              the time length (will always be interpolated to 1024 samples)
         frequency: scalar or 1D array-like
-            The frequency operation point(s)
+            The frequency operation point(s) in Hz
         temperature: scalar or 1D array-like
-            The temperature operation point(s)
+            The temperature operation point(s) in °C
+        
+        Return
+        ------
+        p, h: (X,) np.array, (X, Y) np.ndarray
+            The estimated power loss (p) in W/m³ and the estimated magnetic field strength (h) in A/m.
         """
         ds = engineer_features(b_seq, frequency, temperature, self.material)
         # construct tensors
-        x_cols = [
-            c
-            for c in ds
-            if c not in ["ploss", "kfold", "material"]
-            and not c.startswith(("B_t_", "H_t_"))
-        ]
-        b_limit_per_profile = (
-            np.abs(ds.loc[:, ALL_B_COLS].to_numpy()).max(axis=1).reshape(-1, 1)
-        )
+        x_cols = [c for c in ds if c not in ["ploss", "kfold", "material"] and not c.startswith(("B_t_", "H_t_"))]
+        b_limit_per_profile = np.abs(ds.loc[:, ALL_B_COLS].to_numpy()).max(axis=1).reshape(-1, 1)
         h_limit = self.h_limit * b_limit_per_profile / self.b_limit
         b_limit_test_fold = self.b_limit
         b_limit_test_fold_pp = b_limit_per_profile
@@ -548,12 +530,8 @@ class PaderbornModel:
 
             if self.predicts_p_directly:
                 # prepare torch tensors for normalization scales
-                b_limit_test_fold_torch = torch.as_tensor(
-                    b_limit_test_fold, dtype=torch.float32
-                )
-                h_limit_test_fold_torch = torch.as_tensor(
-                    h_limit_test_fold, dtype=torch.float32
-                )
+                b_limit_test_fold_torch = torch.as_tensor(b_limit_test_fold, dtype=torch.float32)
+                h_limit_test_fold_torch = torch.as_tensor(h_limit_test_fold, dtype=torch.float32)
                 freq_scale_torch = torch.as_tensor(FREQ_SCALE, dtype=torch.float32)
 
                 val_pred_p, val_pred_h = self.mdl(

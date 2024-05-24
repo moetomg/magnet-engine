@@ -82,6 +82,8 @@ normsDict ={"77":  [[-2.63253458e-19,  7.47821754e-02],
 
 # %% Initialize model
 class SydneyModel:
+    """The Sydney model."""
+
     def __init__(self, mdl_path, material):
         # Select GPU as default device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -94,101 +96,47 @@ class SydneyModel:
         self.mdl.load_state_dict(state_dict,strict=True)
         
     
-    def __call__(self, data_B, data_F, data_T, return_h_sequence=True):
+    def __call__(self, data_B, data_F, data_T):
+        """Call method."""
         # ----------------------------------------------------------- batch execution  
-        if isinstance(data_F, np.ndarray):
+        # 1.Get dataloader
+        if data_B.ndim == 1:
+            data_B = np.array(data_B).reshape(1, -1)
 
-            # 1.Get dataloader
-            loader = get_dataloader(data_B,data_F,data_T,self.mdl.norm)
-            
-            # 2.Validate the models 
-            data_P = torch.Tensor([]).to(self.device)  # Allocate memory to store loss density
-            
-            with torch.no_grad():
-                # Start model evaluation explicitly
-                self.mdl.eval()
-                for inputs, vars in loader: 
-                        Pv = self.mdl(inputs.to(self.device), vars.to(self.device)) 
-                        
-                        data_P = torch.cat((data_P,Pv.to(self.device)),dim=0)
-            return data_P.detach().cpu().numpy()
-        # ----------------------------------------------------------- one cycle execution 
-        else:    
-            # 1. Unify the data type 
-            if isinstance(data_B, np.ndarray):
-                if data_B.ndim != 1:
-                    data_B = data_B.flatten()  
-            elif isinstance(data_B, list):
-                    data_B = np.array(data_B)     
-            seq_length = data_B.shape[0]
-            
-            if isinstance(data_F, np.ndarray):
-                if data_F.ndim != 1:
-                    data_F = data_F.flatten()  
-            else:
-                    data_F = np.array(data_F)  
-                    
-            if isinstance(data_T, np.ndarray):
-                if data_T.ndim != 1:
-                    data_T = data_T.flatten()  
-            else:
-                    data_T = np.array(data_T)  
-            
-            # 2. Add extra points for initial magnetization calculation 
-            data_B = np.append(data_B,data_B[1:1+self.mdl.n_init],axis=0)
-            data_length = data_B.shape[0]
+        loader = get_dataloader(data_B,data_F,data_T,self.mdl.norm)
 
-            # 3. Format data into tensors 
-            B = torch.from_numpy(data_B).view(-1,data_length,1).float()
-            F = torch.log10(torch.from_numpy(data_F).view(-1,1).float())
-            T = torch.from_numpy(data_T).view(-1,1).float() 
-            
-            # 4. Data Normalization 
-            norm = self.mdl.norm
-            in_B = (B-norm[0][0])/norm[0][1]
-            in_T = (T-norm[3][0])/norm[3][1]
-            in_F = (F-norm[2][0])/norm[2][1]
-            
-            # 5. Extra features 
-            in_dB = torch.diff(in_B,dim=1)                     # Flux density change
-            in_dB = torch.cat((in_dB[:,0:1,:],in_dB),dim=1)
-            
-            dB_dt = in_dB*(seq_length*F.view(-1,1,1))
-            in_dB_dt = (dB_dt-norm[4][0])/norm[4][1]        # Flux density change rate
-            
-            max_B,_ = torch.max(in_B,dim=1)
-            min_B,_ = torch.min(in_B,dim=1)
-            s0 = get_operator_init(in_B[:,0,0]-in_dB[:,0,0], in_dB, max_B, min_B) # Operator inital state 
+        # 2.Validate the models
+        data_P = torch.Tensor([]).to(self.device)  # Allocate memory to store loss density
 
-            # 6.Predict 
-            with torch.no_grad():
-                # Start model evaluation explicitly
-                self.mdl.eval()
-                inputs = torch.cat((in_B,in_dB,in_dB_dt),dim=2).to(self.device)
-                vars = torch.cat((in_F, in_T, s0),dim=1).to(self.device)
-                
-            # 7. Return results 
-            if return_h_sequence:
-                Pv, H = self.mdl(inputs, vars, return_h_sequence) 
-                Pv = Pv.detach().numpy()
-                return Pv[0], H
-            else: 
-                Pv = self.mdl(inputs, vars, return_h_sequence) 
-                Pv = Pv.detach().numpy()
-                return Pv[0]
+        with torch.no_grad():
+            # Start model evaluation explicitly
+            self.mdl.eval()
+            for inputs, vars in loader:
+                    Pv, h_series = self.mdl(inputs.to(self.device), vars.to(self.device))
+
+                    data_P = torch.cat((data_P,Pv.to(self.device)),dim=0)
+        data_P, h_series = data_P.cpu().numpy(), h_series.cpu().numpy()
+        
+        # 3.Return results 
+        if data_P.size == 1:
+            data_P = data_P.item()
+        if h_series.ndim == 1:
+            h_series = h_series.reshape(1, -1)
             
+        return data_P, h_series
+
     
 
-# %% Magnetization mechansim-determined neural network
 class MMINet(torch.nn.Module):
-
     """
-     Parameters:
-      - hidden_size: number of eddy current slices (RNN neuron)
-      - operator_size: number of operators
-      - input_size: number of inputs (1.B 2.dB 3.dB/dt)
-      - var_size: number of supplenmentary variables (1.F 2.T)        
-      - output_size: number of outputs (1.H)
+    Magnetization mechanism-determined neural network.
+
+    Parameters:
+    - hidden_size: number of eddy current slices (RNN neuron)
+    - operator_size: number of operators
+    - input_size: number of inputs (1.B 2.dB 3.dB/dt)
+    - var_size: number of supplenmentary variables (1.F 2.T)
+    - output_size: number of outputs (1.H)
     """
 
     def __init__(self, Material, hidden_size=30, operator_size=30,
@@ -210,12 +158,15 @@ class MMINet(torch.nn.Module):
 
         self.rnn2_hx = None
 
-    def forward(self, x, var, return_h_sequence=False):
+    def forward(self, x, var):
         """
-         Parameters: 
-          - x(batch,seq,input_size): Input features (1.B, 2.dB, 3.dB/dt)  
-          - var(batch,var_size): Supplementary inputs (1.F 2.T)
-          - s0(batch,1): Operator inital states
+        Forward function.
+
+        Parameters:
+        x: batch,seq,input_size
+            Input features (1.B, 2.dB, 3.dB/dt)
+        var: batch,var_size
+            Supplementary inputs (1.F 2.T)
         """    
         batch_size = x.size(0)          # Batch size 
         seq_size = x.size(1)            # Ser
@@ -259,52 +210,45 @@ class MMINet(torch.nn.Module):
 
         # Compute the power loss density 
         B = (x[:,self.n_init:,0:1]*self.norm[0][1]+self.norm[0][0]) 
-        H = (output[:,self.n_init:,:]*self.norm[1][1]+self.norm[1][0]) 
-        Pv = torch.trapz(H,B,axis=1)*(10**(var[:,0:1]*self.norm[2][1]+self.norm[2][0]))
+        H = (output[:, self.n_init:,:]*self.norm[1][1]+self.norm[1][0])
+        Pv = torch.trapz(H, B, axis=1)*(10**(var[:, 0:1]*self.norm[2][1]+self.norm[2][0]))
 
-        # Return results 
-        if return_h_sequence:
-            H = savgol_filter(H.detach().to("cpu").numpy(), window_length=7, polyorder=2,axis=1)
-            H = torch.from_numpy(H).view(batch_size,-1,1)
-            real_H = torch.cat((H[:,-self.n_init:,:],H[:,:-self.n_init,:]),dim=1)
-            return torch.flatten(Pv).cpu(),torch.flatten(real_H).numpy()
-        else: 
-            return torch.flatten(Pv).cpu()
+        # Return results
+        H = savgol_filter(H.detach().to("cpu").numpy(), window_length=7, polyorder=2,axis=1)
+        H = torch.from_numpy(H).view(batch_size,-1,1)
+        real_H = torch.cat((H[:, -self.n_init:, :],H[:, :-self.n_init, :]), dim=1)
+        return torch.flatten(Pv).cpu(), real_H[:, :, 0].cpu()
     
-# %% MMINN Sub-layer: Static hysteresis prediction using stop operators 
 class StopOperatorCell():
+    """
+    MMINN Sub-layer: Static hysteresis prediction using stop operators.
 
-    """ 
-      Parameters:
-      - operator_size: number of operator
+    Parameters:
+    - operator_size: number of operator
     """
 
     def __init__(self, operator_size):
         self.operator_thre = torch.pow(torch.arange(1, operator_size+1, dtype=torch.float)/(operator_size+1), torch.tensor(3.0)).view(1,-1)*1
         
     def sslu(self, X):
-        """ Hardsimoid-like or symmetric saturated linear unit definition
-
-        """
+        """Hardsimoid-like or symmetric saturated linear unit definition."""
         a = torch.ones_like(X)
         return torch.max(-a,torch.min(a,X))
     
     def __call__(self, dB, state):
-        """ Update operator of each time step
-
-        """
+        """Update operator of each time step."""
         r = self.operator_thre.to(dB.device) 
         output = self.sslu((dB + state)/r)*r
         return output.float()
   
-# %% MMINN subsubnetwork: Dynamic hysteresis prediction
 class EddyCell(torch.nn.Module):
+    """
+    MMINN subsubnetwork: Dynamic hysteresis prediction.
 
-    """ 
-      Parameters:
-      - input_size: feature size 
-      - hidden_size: number of hidden units (eddy current layers)
-      - output_size: number of the output
+    Parameters:
+    - input_size: feature size
+    - hidden_size: number of hidden units (eddy current layers)
+    - output_size: number of the output
     """
 
     def __init__(self, input_size, hidden_size, output_size=1):
@@ -318,24 +262,33 @@ class EddyCell(torch.nn.Module):
 
     def forward(self, x, hidden=None):
         """
-         Parameters:
-         - x(batch,input_size): features (1.B 2.dB/dt 3.F 4.T)
-         - hidden(batch,hidden_size): dynamic hysteresis effects at each eddy current layer 
+        Forward function.
+
+        Parameters:
+        x: batch,input_size
+            features (1.B 2.dB/dt 3.F 4.T)
+        hidden: batch,hidden_size
+            dynamic hysteresis effects at each eddy current layer
         """
         hidden = self.x2h(x) + self.h2h(hidden)
         hidden = torch.sigmoid(hidden)
         return hidden
 
 
-# %% Preprocess data into a data loader 
-def get_dataloader(data_B,data_F,data_T,norm,
-                   n_init = 32):
-    """Get a test dataloader 
+def get_dataloader(data_B, data_F, data_T, norm, n_init=32):
+    """
+    Preprocess data into a data loader.
+
+    Get a test dataloader.
 
     Parameters
     ---------
-    data_B/data_F/data_T : array 
-         B/F/T data
+    data_B: array
+         B data
+    data_F
+         F data
+    data_T
+         T data
     norm : list 
          B/F/T normalization data
     n_init : int
@@ -345,18 +298,23 @@ def get_dataloader(data_B,data_F,data_T,norm,
     # Data pre-process 
     # 1. Down-sample to 128 points 
     seq_length = 128
-    cols = np.array(range(0,1023,8))
-    data_B = data_B[:,cols]
+
+    cols = np.array(range(0,data_B.shape[1],round(data_B.shape[1]/seq_length)))
+    data_B = data_B[:, cols]
     
     # 2. Add extra points for initial magnetization calculation 
     data_length = seq_length + n_init
     data_B = np.hstack((data_B,data_B[:,1:1+n_init]))
 
     # 3. Format data into tensors 
-    B = torch.from_numpy(data_B).view(-1,data_length,1).float()
-    F = torch.log10(torch.from_numpy(data_F).view(-1,1).float())
-    T = torch.from_numpy(data_T).view(-1,1).float()
-    
+    B = torch.from_numpy(data_B).view(-1, data_length, 1).float()
+    if np.isscalar(data_F):
+        data_F = np.array([data_F])
+    if np.isscalar(data_T):
+        data_T = np.array([data_T])
+    T = torch.from_numpy(data_T).view(-1, 1).float()
+    F = torch.from_numpy(np.log10(data_F)).view(-1,1).float()
+
     # 4. Data Normalization 
     in_B = (B-norm[0][0])/norm[0][1]
     in_F = (F-norm[2][0])/norm[2][1]
@@ -364,28 +322,27 @@ def get_dataloader(data_B,data_F,data_T,norm,
     
     # 5. Extra features 
     in_dB = torch.diff(in_B,dim=1)                     # Flux density change
-    in_dB = torch.cat((in_dB[:,0:1,:],in_dB),dim=1)
+    in_dB = torch.cat((in_dB[:, 0:1, :], in_dB), dim=1)
     
-    dB_dt = in_dB*(seq_length*F.view(-1,1,1))
+    dB_dt = in_dB*(seq_length*F.reshape(-1, 1, 1))
     in_dB_dt = (dB_dt-norm[4][0])/norm[4][1]        # Flux density change rate
     
-    max_B,_ = torch.max(in_B,dim=1)
-    min_B,_ = torch.min(in_B,dim=1)
-    
-    s0 = get_operator_init(in_B[:,0,0]-in_dB[:,0,0], in_dB, max_B, min_B) # Operator inital state 
+    max_B, _ = torch.max(in_B, dim=1)
+    min_B, _ = torch.min(in_B, dim=1)
+
+    s0 = get_operator_init(in_B[:, 0, 0]-in_dB[:, 0, 0], in_dB, max_B, min_B)  # Operator inital state
 
     # 6. Create dataloader to speed up data processing
-    test_dataset = torch.utils.data.TensorDataset(torch.cat((in_B,in_dB,in_dB_dt),dim=2), torch.cat((in_F, in_T, s0),dim=1))
-    kwargs = {'num_workers': 0, 'batch_size':128, 
-                        'pin_memory': True, 'pin_memory_device': "cuda" if torch.cuda.is_available() else "cpu",
-                        'drop_last': False}
+    test_dataset = torch.utils.data.TensorDataset(torch.cat((in_B, in_dB, in_dB_dt), dim=2), torch.cat((in_F, in_T, s0),dim=1))
+    kwargs = {'num_workers': 0, 'batch_size': 128, 'drop_last': False}
     test_loader = torch.utils.data.DataLoader(test_dataset, **kwargs)
 
     return test_loader
 
+
 # %% Predict the operator state at t0
 def get_operator_init(B0, dB, Bmax, Bmin, operator_size=30, max_out_H=1):
-    """Compute the inital state of hysteresis operators
+    """Compute the initial state of hysteresis operators.
 
     Parameters
     ---------
@@ -393,28 +350,48 @@ def get_operator_init(B0, dB, Bmax, Bmin, operator_size=30, max_out_H=1):
          Stop operator excitation at t1
     dB : torch_like (batch, data_length)
          Flux density changes at each t
-    Bmax/Bmin : torch_like (batch)
-         Max/Min flux density of each cycle 
+    Bmax: torch_like (batch)
+         Max flux density of each cycle
+    Bmin: torch_like (batch)
+         Min flux density of each cycle
+    operator_size: int
+         The number of operators 
+    max_out_H:
+         The maximum output of field strength
     """
     # 1. Parameter setting
     batch = dB.shape[0]
     state = torch.zeros((batch, operator_size))
-    operator_thre = torch.pow(torch.arange(1, operator_size+1, dtype=torch.float)/operator_size+1, torch.tensor(3.0)).view(1,-1)*max_out_H
-   
+    operator_thre = torch.pow(torch.arange(1, operator_size+1, dtype=torch.float)/operator_size+1, torch.tensor(3.0)).view(1, -1)*max_out_H
+
     # 2. Iterate each excitation for the operator inital state computation
     for i in range(B0.__len__()):
         for j in range(operator_size):
-            r = operator_thre[0,j]
+            r = operator_thre[0, j]
             if (Bmax[i] >= r) or (Bmin[i] <= -r):
-                if dB[i,0] >= 0:
+                if dB[i, 0] >= 0:
                     if B0[i] > Bmin[i]+2*r:
-                        state[i,j] = r
+                        state[i, j] = r
                     else:
-                        state[i,j] = B0[i]-(r+Bmin[i])
+                        state[i, j] = B0[i]-(r+Bmin[i])
                 else:
                     if B0[i] < Bmax[i]-2*r:
-                        state[i,j] = -r
+                        state[i, j] = -r
                     else:
-                        state[i,j] = B0[i]+(r-Bmax[i])
+                        state[i, j] = B0[i]+(r-Bmax[i])
 
     return state
+
+'''
+from os import getcwd
+from os.path import join
+directory = getcwd()
+folder = join(directory, "Sydney", "models")
+
+mdl_path = folder+"/"+"T37"+".pt"
+mdl = SydneyModel(mdl_path,"T37")
+
+B = np.linspace(0,100,128)
+h = mdl(B/1000,1000,20)
+
+'''

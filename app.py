@@ -7,13 +7,9 @@ import streamlit as st
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
 @st.cache_resource
-def load_model(model,mdl_path,material):
-    if model == "Sydney":
-        from Sydney.Sydney import SydneyModel 
-        mdl = SydneyModel(mdl_path,material)
-    elif model == "Paderborn":
-        from Paderborn.Paderborn import PaderbornModel
-        mdl = PaderbornModel(mdl_path,material)
+def load_model(model,material):
+    import magnethub as mh
+    mdl = mh.loss.LossModel(material, model)
     return mdl
 
 @st.cache_resource        
@@ -251,7 +247,7 @@ def main():
         material = st.selectbox('Target material', materials, index=len(materials)-1)
         mdl_path = folder+"/"+material+".pt"
         # Initialize the model 
-        mdl = load_model(model,mdl_path,material)
+        mdl = load_model(model,material)
 
         # Seperator
         st.sidebar.markdown(
@@ -450,7 +446,6 @@ def main():
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # ************************ Frequency/Temperature setting
-        #_,col4_1, _, col4_2, _ = st.columns([0.3, 1, 0.1, 1.5, 0.1])
         _, col4_1, _, col4_2 = st.columns([0.18,1.1,0.12,1.2])
         with col4_1:
             st.markdown("<div ></div>", unsafe_allow_html=True)
@@ -490,7 +485,6 @@ def main():
                 B = array(first_row[index].tolist())*1000  # convert to mT
        
         # Predict H and Pv 
-        
         if sum(B) == 0:
             H  = linspace(0, 0, resolution_params[model])
         else:

@@ -88,24 +88,28 @@ def main():
             </div>
             """, 
             unsafe_allow_html=True)
-        
+
         # Display message
-        st.sidebar.title("MagNet tools")
+        st.write("""<div style='margin-top: 2px; margin-bottom: 15px;'><span style='font-size: calc(0.7vw + 10px); text-decoration: none; font-weight: bold; text-align: left; font-family: sans-serif;'> MagNet tools</span></div>""", unsafe_allow_html=True)
         
         # Set text box style
         st.markdown(
         """
         <style>
+            .styled-link{
+                font-size: 17px;
+            }
             .styled-link a {
                 text-decoration: none; 
                 color: rgb(199, 235, 223); 
+                font-size: 17px;
             }
             .styled-link a:hover {
                 color: rgba(41, 121, 255, 1); 
             }
         </style>
         
-        <div class="styled-link" style='background-color: rgba(42, 62, 87, 1); padding: 20px; border-radius: 10px;'>
+        <div class="styled-link" style='background-color: rgba(42, 62, 87, 1); padding: 15px; border-radius: 10px;'>
             Data information: <a href="https://www.princeton.edu/~minjie/magnet.html">MagNet  Database</a><br>
             AI platform: <a href="https://mag-net.princeton.edu/">MagNet-AI Platform</a><br>
             Github repo: <a href="https://github.com/upb-lea/mag-net-hub">MagNet Toolkit</a><br>
@@ -113,16 +117,21 @@ def main():
         """, unsafe_allow_html=True)
         
         # Display message
-        st.sidebar.title("Support")
-        st.sidebar.info(
+        st.write("""<div style='margin-top: 10px; margin-bottom: 5px;'> <span style='font-size: calc(0.7vw + 10px); text-decoration: none; font-weight: bold; text-align: left; font-family: sans-serif;'> Contact us</span></div>""", unsafe_allow_html=True)
+        st.markdown(
         """
-        Issues with app usage, please contact: sinan.li@sydney.edu.au
-        """)
-        
+        <div class="styled-link" style='background-color: rgba(42, 62, 87, 1); padding: 15px; border-radius: 10px; margin-top: 10px;'>
+            Sinan: 
+            <a href="mailto:sinan.li@sydney.edu.au">sinan.li@sydney.edu.au</a><br>
+            Qiujie: 
+            <a href="mailto:qiujie.huang@sydney.edu.au">qiujie.huang@sydney.edu.au</a>
+        </div>
+        """, unsafe_allow_html=True)
+                
         # White space acts as separator
         st.sidebar.markdown(
             """
-            <div style='margin-top: 10px; margin-bottom: 10px; height:0px;
+            <div style='margin-top: 10px; margin-bottom: 30px; height:0px;
                     border:none;
                     color:transparent;
                     background-color:transparent;'>

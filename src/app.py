@@ -5,6 +5,7 @@ Source: https://github.com/moetomg/magnet-engine
 """
 import streamlit as st
 import streamlit_vertical_slider as svs
+import streamlit.components.v1 as components
 
 from os import getcwd
 from os.path import join
@@ -23,6 +24,22 @@ def main():
         page_icon = "🧲",
         layout = "wide",
         initial_sidebar_state = "expanded")
+
+    # Google Analytics HTML code
+    google_analytics_html = """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HSVNNL7GNL"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-HSVNNL7GNL');
+    </script>
+    """
+
+    # Display the HTML code
+    components.html(google_analytics_html, height=0, width=0)
 
     # Extract icon folder address
     directory = getcwd()

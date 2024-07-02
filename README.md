@@ -13,6 +13,7 @@ Welcome to the Magnetic Core Loss Modeling Web-Based GUI project! This project p
 - Customizable Parameters: Users can adjust various parameters (excitation waveform, operating frequency and temperature) to simulate different scenarios and analyze the impact of a periodic signal on core losses.
 - Web-Based: Accessible through web browsers, eliminating the need for installation and providing convenience for users.
 - Diverse Materials: Support up to 15 ferrites - 77, 78, 79, N27, N30, N49, N87, 3E6, 3F4, T37, 3C90, 3C92, 3C92, 3C94, ML95S
+- MagNet Toolkit package integrated: https://github.com/upb-lea/mag-net-hub
 
 ## GUI Usage 
 - Access the GUI: Visit [MagNet Engine] in your web browser.
@@ -26,12 +27,12 @@ To test the model, clone the responsitory locally and excute the following code:
 ```r
 import os
 import numpy as np
-from magnet-engine.[team] import [team]Model
+from .\src\[team] import [team]
 # Select model
 material="3C92"
 
 # open magnet-engine as the working dir
-mdl_path = "./[team]/models/"+material+".pt"
+mdl_path = "./src/[team]/models/"+material+".pt"
 
 # instantiate material-specific model
 mdl = SydneyModel(mdl_path, material="3C92")
@@ -62,13 +63,12 @@ class SydneyModel:
       - material: target material name (e.g., 77, 78, 79)
     """
     pass
-  def __call__(self, data_B, data_F, data_T, return_h_sequence=True):
+  def __call__(self, data_B, data_F, data_T):
     """
      Parameters:
       - data_B: the flux density sequence in nd.array format
       - data_F: the operating frequency in list (one set prediction)/ nd.array (one batch prediction)
       - data_T: the operating temperature in list (one set prediction)/ nd.array (one batch prediction)
-      - return_h_sequence: a boolean variable tell whether the function return H sequence (optional)
     """
     pass
 ```
@@ -82,7 +82,7 @@ class SydneyModel:
     └── Sydney.py               # Main file 
 
 5. Make sure each of your models runs correctly.
-6. Finally, zip your folder, or upload it to a public github responsitory.
+6. Finally, zip your folder, or upload it to [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub).
 
 For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 
 

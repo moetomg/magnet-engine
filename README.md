@@ -4,7 +4,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![GitHub last commit](https://img.shields.io/github/last-commit/moetomg/magnet-engine)
 
-Welcome to the Magnetic Core Loss Modeling Web-Based GUI project! This project provides a user-friendly graphical user interface (GUI) for modeling magnetic core losses in power electronics. The underlying model is based on the IEEE PELS-Google-Enphase-Princeton [MagNet Challenge 2023](https://github.com/minjiechen/magnetchallenge/tree/main) competition models. The website is currently deployed at [Magnet Engine](https://magnet-engine-dfprepz3gq-ts.a.run.app) and maintained by The University of Sydney. 
+Welcome to the Magnet Engine! This GUI platform offers a comprehensive and user-friendly interface for modeling magnetic core losses in power electronic applications. Designed to assist engineers, researchers, and professionals, the GUI simplifies the process of simulating and analyzing core losses, enhancing both the design and optimization of power electronics systems.
+
+## About the Project
+This project utilizes state-of-the-art modeling techniques based on the models developed for the IEEE PELS-Google-Enphase-Princeton [MagNet Challenge 2023](https://github.com/minjiechen/magnetchallenge/tree/main). Our goal is to provide an accessible, web-based tool that empowers users to explore and apply advanced core loss models in a straightforward and effective manner.
+
+The platform is currently deployed at: https://magnet-engine-app.sydney.edu.au (TBA) and is actively maintained by The University of Sydney. Our team is committed to continuous improvement, regularly updating the tool to incorporate the latest research findings and industry best practices.
 
 <img src="icons/mclogo.jpg" width="1000">
 
@@ -86,8 +91,17 @@ class SydneyModel:
 
 For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 
 
-## Installation 
-There is no installation required for this web-based GUI. Simply access it through your web browser using the provided link.
+## Local Installation
+To run the project locally, follow these steps:
+1. Build the Docker containers:
+```
+docker-compose build
+```
+2. Start the Docker containers:
+```
+docker-compose up
+```
+3. Once the containers are running, open your web browser and navigate to: http://localhost:8080
 
 ## License 
 This project is licensed under the [MIT License](https://opensource.org/license/mit).
@@ -105,10 +119,9 @@ For any inquiries or support, please contact sinan.li@sydney.edu.au
 - [MagNet-AI Platform](https://mag-net.princeton.edu/) - maintained by Princeton University
 - [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub) - maintained by Paderborn University
 
-## Runing as a container 
-```
-docker-compose build
-docker-compose up
-```
+## Project Reference Papers
 
-http://localhost:8080
+- Q. Huang, Y. Li, J. Zhu and S. Li, "Magnetization Mechanism-Inspired Neural Networks for Core Loss Estimation," in IEEE Transactions on Power Electronics, doi: 10.1109/TPEL.2024.3450897. [Paper] (https://ieeexplore.ieee.org/document/10654567)
+- Förster, Nikolas, Wilhelm Kirchgässner, Till Piepenbrock, Oliver Schweins, and Oliver Wallscheid. "HARDCORE: H-field and power loss estimation for arbitrary waveforms with residual, dilated convolutional neural networks in ferrite cores." arXiv preprint arXiv:2401.11488 (2024). [Paper] (https://arxiv.org/abs/2401.11488)
+
+

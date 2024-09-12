@@ -5,7 +5,6 @@ Source: https://github.com/moetomg/magnet-engine
 """
 import streamlit as st
 import streamlit_vertical_slider as svs
-import streamlit.components.v1 as components
 
 from os import getcwd
 from os.path import join
@@ -24,22 +23,6 @@ def main():
         page_icon = "🧲",
         layout = "wide",
         initial_sidebar_state = "expanded")
-
-    # Google Analytics HTML code
-    google_analytics_html = """
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HSVNNL7GNL"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-HSVNNL7GNL');
-    </script>
-    """
-
-    # Display the HTML code
-    components.html(google_analytics_html, height=0, width=0)
 
     # Extract icon folder address
     directory = getcwd()
@@ -63,7 +46,7 @@ def main():
     shapes = [
         ('Sinusoidal ∿', 'sine.svg'),
         ('Triangular △', 'tri.svg'),
-        ('Trapzoidal ☖', 'trap.svg'),
+        ('Trapezoidal ☖', 'trap.svg'),
         ('Customize  ✐', 'user.svg')
         ]
 
@@ -295,7 +278,7 @@ def main():
     # Define the first element in the second row 
     with col4:
         # Display message
-        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Condition [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
+        st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Conditions [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # Element layout setting
         _, col4_1, _, col4_2 = st.columns([0.18, 1.1, 0.12, 1.2])

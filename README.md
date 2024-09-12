@@ -104,3 +104,11 @@ For any inquiries or support, please contact sinan.li@sydney.edu.au
 - [MagNet Open Database](https://www.princeton.edu/~minjie/magnet.html) - maintained by Princeton University
 - [MagNet-AI Platform](https://mag-net.princeton.edu/) - maintained by Princeton University
 - [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub) - maintained by Paderborn University
+
+## Runing as a container 
+```
+docker-compose build
+docker-compose up
+```
+
+http://localhost:8080

@@ -187,9 +187,9 @@ def main():
 
         # Waveform parameters setting
         if st.session_state['shape_id'] == 0:
-            col3_1, col3_2 = st.columns([1, 1]) 
+            col3_1, _, col3_2, _ = st.columns([1, 1, 1, 1]) 
         elif st.session_state['shape_id'] == 1:
-            col3_1, col3_2, col3_3 = st.columns([1, 1, 1]) 
+            col3_1, col3_2, col3_3, _ = st.columns([1, 1, 1, 1]) 
         elif st.session_state['shape_id'] == 2:
             col3_1, col3_2, col3_3, col3_4 = st.columns([1, 1, 1, 1])           
   

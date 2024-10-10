@@ -9,7 +9,7 @@ Welcome to the Magnet Engine! This GUI platform offers a comprehensive and user-
 ## About the Project
 This project utilizes state-of-the-art modeling techniques based on the models developed for the IEEE PELS-Google-Enphase-Princeton [MagNet Challenge 2023](https://github.com/minjiechen/magnetchallenge/tree/main). Our goal is to provide an accessible, web-based tool that empowers users to explore and apply advanced core loss models in a straightforward and effective manner.
 
-The platform is currently deployed at: https://magnet-engine-app.sydney.edu.au (TBC) and is actively maintained by The University of Sydney. Our team is committed to continuous improvement, regularly updating the tool to incorporate the latest research findings and industry best practices.
+The platform is currently deployed at: https://magnet-engine-app.sydney.edu.au/ and is actively maintained by The University of Sydney. Our team is committed to continuous improvement, regularly updating the tool to incorporate the latest research findings and industry best practices.
 
 <img src="icons/mclogo.jpg" width="1000">
 

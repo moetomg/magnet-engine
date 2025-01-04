@@ -29,10 +29,11 @@ def main():
     icon_folder = join(directory, "icons")
     
     # Define model and material choices
-    models = ['Paderborn','Sydney']
+    models = ['Paderborn','Sydney','ASU']
     resolution_params = {
                 "Sydney": 128,
-                "Paderborn": 1024,    
+                "Paderborn": 1024,
+                "ASU":1024,    
             } # Model resolution 
     materials = ['3C90','3C92','3C94','3C95','3E6' ,
                 '3F4' ,'77'  ,'78'  ,'79'  ,'ML95S',

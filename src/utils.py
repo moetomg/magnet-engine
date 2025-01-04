@@ -5,9 +5,12 @@ Source: https://github.com/moetomg/magnet-engine
 """
 import altair as alt 
 import magnethub as mh
-
+import torch
+import teams.ASU.ASU 
 from pandas import DataFrame
-
+print(help(teams.ASU.ASU))
+print(dir(teams.ASU.ASU))
+ASUModel=teams.ASU.ASU.ASUModel
 def load_model(model, material):
     """
     Load the core loss model from magnet-hub.
@@ -16,6 +19,10 @@ def load_model(model, material):
         model (torch.nn): The trained core loss model. 
         material (string): The name of the material.
     """    
+    if model=="ASU":
+        # model="Paderborn"
+        mdl=ASUModel(model,material)
+        return mdl
     mdl = mh.loss.LossModel(material, model)
     return mdl
 

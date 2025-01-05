@@ -60,7 +60,6 @@ def shift_data(data):
         for i in range(len(data)):
             locMini = np.argmin(data, axis=1)[i]
             degrees = 360-locMini/len(data[i, :])*360
-            # print(degrees)
             if locMini == 0 or locMini == len(data):
                 new.append(np.array([data[i]]))
             else:
@@ -71,7 +70,6 @@ def shift_data(data):
     if data.ndim == 1:
         locMin = np.argmin(data)
         degrees = 360-locMin/len(data)*360
-        print(degrees)
         new = rotate2D(np.array([data]), degrees)[0]
         return new
 
@@ -189,7 +187,6 @@ def core_loss(data_B, data_F, data_T):
     data_P = np.random.rand(length, 1)
 
     # New stuff
-    print(length)
     nparams = 24
 
     # Data transformation for model input
@@ -199,12 +196,7 @@ def core_loss(data_B, data_F, data_T):
     B = np.log10(np.abs(B))
 
     F = np.log10(data_F).reshape(-1, 1)
-    print("F", F)
-    print("B", B)
-    print("T", T)
     data_in = np.concatenate((F, [B], T),axis=1)
-
-    print("input size", data_in.shape)
 
     # ========================================
     # Model load
@@ -217,7 +209,6 @@ def core_loss(data_B, data_F, data_T):
             Ax = np.array(param)
             paramaters.append(Ax)
             modelSize += Ax.size
-    print("Model size: ", modelSize)
     # Model parameters, Linear Layer weights and biases
     A1w = paramaters[0].T
     A1b = paramaters[1].reshape(1, -1)
@@ -298,8 +289,6 @@ def main():
     # Reproducibility
     random.seed(1)
     np.random.seed(1)
-    print("Testing material {}".format(Material))
-
     data_B, data_F, data_T = load_dataset(
                  in_file1=BASE_DIR+"/Testing/"+Material+"/B_Field.csv",
                  in_file2=BASE_DIR+"/Testing/"+Material+"/Frequency.csv",

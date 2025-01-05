@@ -8,8 +8,8 @@ import magnethub as mh
 import torch
 import teams.ASU.ASU 
 from pandas import DataFrame
-print(help(teams.ASU.ASU))
-print(dir(teams.ASU.ASU))
+# print(help(teams.ASU.ASU))
+# print(dir(teams.ASU.ASU))
 ASUModel=teams.ASU.ASU.ASUModel
 def load_model(model, material):
     """

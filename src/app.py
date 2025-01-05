@@ -79,7 +79,6 @@ def main():
 
         # Model and material selector 
         model = st.selectbox('Select a model', models, index=len(models)-1)
-        print("model",model,type(model))
         material = st.selectbox('Target material', materialsbyModel[model], index=len(materialsbyModel[model])-1)
         
         # Initialize and load the model 

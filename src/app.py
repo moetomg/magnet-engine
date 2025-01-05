@@ -38,6 +38,11 @@ def main():
     materials = ['3C90','3C92','3C94','3C95','3E6' ,
                 '3F4' ,'77'  ,'78'  ,'79'  ,'ML95S',
                 'N27' ,'N30' ,'N49' ,'N87' ,'T37']
+    materialsbyModel = {
+        "Sydney":materials,
+        "Paderborn":materials,
+        "ASU":['3C92',"T37","ML95S","79","3C95"]
+    }
     
     # Define user waveform choice 
     if 'shape_id' not in st.session_state:
@@ -74,7 +79,8 @@ def main():
 
         # Model and material selector 
         model = st.selectbox('Select a model', models, index=len(models)-1)
-        material = st.selectbox('Target material', materials, index=len(materials)-1)
+        print("model",model,type(model))
+        material = st.selectbox('Target material', materialsbyModel[model], index=len(materialsbyModel[model])-1)
         
         # Initialize and load the model 
         mdl = load_model(model,material)

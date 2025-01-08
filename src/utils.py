@@ -212,5 +212,4 @@ def generateTrapSequence(time, amplitude, phase, duty1, duty2):
                 yData.append(-amplitude)
             else:
                 yData.append(-amplitude + (time[i] - phase / 360) * (2 * amplitude) / duty1)
-    return yData       
-        
+    return yData      

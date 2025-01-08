@@ -37,7 +37,6 @@ def main():
     materials = ['3C90','3C92','3C94','3C95','3E6' ,
                 '3F4' ,'77'  ,'78'  ,'79'  ,'ML95S',
                 'N27' ,'N30' ,'N49' ,'N87' ,'T37']
-    
     # Define user waveform choice 
     if 'shape_id' not in st.session_state:
         st.session_state['shape_id'] = 0 # 0-sin 1-tri 2-trap 3-user

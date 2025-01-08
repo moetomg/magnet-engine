@@ -54,43 +54,18 @@ Replace
 - ['temperature'] with the operating temperature in °C.
 
 ## Collaboration 
-We're always open to collaborating with anyone interesting in this project. If you would like to display your model in "magnet-engine", please follow the steps below to set up your model. This will helps us better integrate your models into the "magnet-engine" GUI.
+We're always open to collaborating with anyone interesting in this project. If you would like to display your model in "**magnet-engine**", please follow these steps:
 
-1. Define your model as a <ins>class</ins> in a .py file, naming it [team]Model (e.g., SydneyModel in Sydney.py file)
-2. The class should have a constructor and can be invoked as a function. 
-```r
-class SydneyModel:
-  # Initialized with the path of the well-trained model and targeted model 
-  def __init__(self, mdl_path, material):
-     """
-     Parameters:
-      - mdl_path: the path to the trained model file
-      - material: target material name (e.g., 77, 78, 79)
-    """
-    pass
-  def __call__(self, data_B, data_F, data_T):
-    """
-     Parameters:
-      - data_B: the flux density sequence in nd.array format
-      - data_F: the operating frequency in list (one set prediction)/ nd.array (one batch prediction)
-      - data_T: the operating temperature in list (one set prediction)/ nd.array (one batch prediction)
-    """
-    pass
-```
-3. Name the trained model files with the corresponding materials, and place all files in a sub-folder named "models". Folder structure follows: 
-  ### 
-    .
-    ├── models                  # Model files     
-    │   ├── 77.pt          
-    │   ├── 78.pt         
-    │   └── ...               
-    └── Sydney.py               # Main file 
+1. **Submit a Pull Request**
+Add your model to the [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub). repository by creating a pull request. Ensure your model and associated files follow the repository's contribution guidelines.
 
-5. Make sure each of your models runs correctly.
-6. Finally, zip your folder, or upload it to [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub).
+2. **Notify Us**
+After your pull request has been merged in the MagNet Toolkit repository, please notify the editors of this repository. We will update the necessary files to display the new model in the "magnet-engine" GUI. 
 
-For more details, please refer to the model definition in this responsitory. If you have any questions or are interested in cooperation, please feel free to contact us. 
+### **Additional Notes**
+The `team` folder in this repository is a duplicate of the structure in the MagNet Toolkit. It is intended solely for displaying model structures and will not be used in the final GUI. However, it can serve as a reference or be used by users to test models locally.
 
+Feel free to contact us if you have any questions or require assistance during the process.
 ## Local Installation
 To run the project locally, follow these steps:
 1. Build the Docker containers:

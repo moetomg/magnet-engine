@@ -56,10 +56,12 @@ Replace
 ## Collaboration 
 We're always open to collaborating with anyone interesting in this project. If you would like to display your model in "**magnet-engine**", please follow these steps:
 
-1. **Submit a Pull Request**
-Add your model to the [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub). repository by creating a pull request. Ensure your model and associated files follow the repository's contribution guidelines.
+1. **Submit a Pull Request to MagNet Toolkit**
+
+Add your model to the [MagNet Toolkit](https://github.com/upb-lea/mag-net-hub) repository by creating a pull request. Ensure your model and associated files follow the repository's contribution guidelines.
 
 2. **Notify Us**
+
 After your pull request has been merged in the MagNet Toolkit repository, please notify the editors of this repository. We will update the necessary files to display the new model in the "magnet-engine" GUI. 
 
 ### **Additional Notes**

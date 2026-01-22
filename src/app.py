@@ -139,20 +139,29 @@ def main():
             unsafe_allow_html=True)
         
         # Display uni logo
-        st.image("https://openday.sydney.edu.au/static/website/images/usyd-logo-white.png", caption="Powered by: Sydney University", use_column_width=True)
+        st.image("https://openday.sydney.edu.au/static/website/images/usyd-logo-white.png", caption="Powered by: Sydney University", width='stretch')
 
     # Main body style setting
     margins_css = """
         <style>
-            .main > div {
-                padding-left: 2rem;
-                padding-right: 1rem;
-                padding-top: 1.8rem;
-                padding-bottom: -1rem;
+            /* 1. Adjust the padding of the main block container */
+            div.block-container {
+                padding-top: 2.5rem !important; 
+                padding-bottom: 1rem !important;
+                padding-left: 2rem !important;
+                padding-right: 1rem !important;
             }
             
+            /* 2. Maintain column width constraints */
             [data-testid="column"]  [data-testid="stHorizontalBlock"]  [data-testid="column"]{
                 min-width: 1px !important;
+            }
+            
+            /* 3. [NEW] Make Sidebar Responsive */
+            [data-testid="stSidebar"] {
+                width: 20vw !important; /* Set sidebar width to 20% of the viewport width */
+                min-width: 200px !important; /* Optional: Prevent it from getting too narrow on mobile */
+                max-width: 400px !important; /* Optional: Prevent it from getting too wide on large screens */
             }
         </style>
     """
@@ -299,11 +308,11 @@ def main():
         with col4_2:
             # Add donut plot for frequency 
             donut_chart_F = draw_donut(Frequency, 'Frequency', 'blue', [10, 450])
-            st.altair_chart(donut_chart_F, use_container_width=True)
+            st.altair_chart(donut_chart_F, width='stretch')
             
             # Add donut plot for temperature
             donut_chart_T = draw_donut(Temperature, 'Temperature', 'red', [25, 90])
-            st.altair_chart(donut_chart_T, use_container_width=True)
+            st.altair_chart(donut_chart_T, width='stretch')
 
     # Define the second element in the first row 
     with col2:
@@ -346,16 +355,38 @@ def main():
         
         # Plot setting  
         chart = draw_line(B, H, t)
-        st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart, width='stretch')
       
     # Define the second element in the second row   
     with col5:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none; font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""", unsafe_allow_html=True)
 
+        import altair as alt
+        source_loop = DataFrame({'H': H, 'B': B, 'order': range(len(B))})
+        
+        h_min, h_max = H.min(), H.max()
+        h_padding = (h_max - h_min) * 0.05
+        h_domain = [h_min - h_padding, h_max + h_padding]
+        
+        b_min, b_max = B.min(), B.max()
+        b_padding = (b_max - b_min) * 0.05
+        b_domain = [b_min - b_padding, b_max + b_padding]
+        
+        chart2 = alt.Chart(source_loop).mark_line(
+            strokeWidth=4,   
+            color='#2AB0E4'     
+        ).encode(
+            x=alt.X('H', title='H [A/m]', sort=None, scale=alt.Scale(domain=h_domain)), # sort=None avoids automatic sorting
+            y=alt.Y('B', title='B [mT]', scale=alt.Scale(domain=b_domain)  ),
+            order='order',  # force the drawing order
+            tooltip=['H', 'B']
+        ).properties(
+            height=350 
+        ).interactive()
+
         # Plot setting  
-        chart2 = draw_line(B, H)
-        st.altair_chart(chart2, use_container_width=True)
+        st.altair_chart(chart2, width='stretch')
   
     # Define the third element in the second row   
     with col6:
@@ -422,7 +453,7 @@ def main():
                     help="Download B-H-Pv in " + str(resolution_params[model]) + " step as CSV",
                     data=csv.encode('utf-8'),
                     file_name='magnet-engine_prediction.csv',
-                    use_container_width = True,
+                    width='stretch',
                     mime='text/csv',
                 )
 

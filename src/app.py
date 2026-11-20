@@ -3,6 +3,8 @@ File contains the magnet-engine web-based GUI, powered by streamlit.
 
 Source: https://github.com/moetomg/magnet-engine
 """
+import numpy as np
+from csv_waveform import read_waveform_csv
 import streamlit as st
 import streamlit_vertical_slider as svs
 
@@ -10,14 +12,14 @@ from os import getcwd
 from os.path import join
 from pandas import DataFrame
 from footer import footer
-from utils import load_model, draw_donut, draw_line, generateTriSequence, generateTrapSequence
+from utils import load_model, draw_donut, draw_line, draw_empty_response, generateTriSequence, generateTrapSequence
 
 def main():
     """
     GUI main page setting.
-    
+
     """
-    # Page logo and size configuration 
+    # Page logo and size configuration
     st.set_page_config(
         page_title = "MagNet Engine",
         page_icon = "🧲",
@@ -27,20 +29,20 @@ def main():
     # Extract icon folder address
     directory = getcwd()
     icon_folder = join(directory, "icons")
-    
+
     # Define model and material choices
     models = ['Paderborn','Sydney']
     resolution_params = {
                 "Sydney": 128,
-                "Paderborn": 1024,    
-            } # Model resolution 
+                "Paderborn": 1024,
+            } # Model resolution
     materials = ['3C90','3C92','3C94','3C95','3E6' ,
                 '3F4' ,'77'  ,'78'  ,'79'  ,'ML95S',
                 'N27' ,'N30' ,'N49' ,'N87' ,'T37']
-    # Define user waveform choice 
+    # Define user waveform choice
     if 'shape_id' not in st.session_state:
         st.session_state['shape_id'] = 0 # 0-sin 1-tri 2-trap 3-user
-    
+
     # Define waveform selection icon
     shapes = [
         ('Sinusoidal ∿', 'sine.svg'),
@@ -59,9 +61,9 @@ def main():
     if 'phase' not in st.session_state:
         st.session_state['phase'] = 0
 
-    # Define the side bar 
+    # Define the side bar
     with st.sidebar:
-        # Sidebar style setting 
+        # Sidebar style setting
         st.write("""
         <div style='position: relative; top: -30px; margin-bottom: -30px;'>
             <span style='font-size: calc(0.8vw + 0.8vh + 10px); text-decoration: none; font-weight: bold; text-align: left;'>
@@ -70,11 +72,11 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-        # Model and material selector 
+        # Model and material selector
         model = st.selectbox('Select a model', models, index=len(models)-1)
         material = st.selectbox('Target material', materials, index=len(materials)-1)
-        
-        # Initialize and load the model 
+
+        # Initialize and load the model
         mdl = load_model(model,material)
 
         # White space acts as separator
@@ -85,12 +87,12 @@ def main():
                     color: #808080;
                     background-color: #808080;'>
             </div>
-            """, 
+            """,
             unsafe_allow_html=True)
 
         # Display message
         st.write("""<div style='margin-top: 2px; margin-bottom: 15px;'><span style='font-size: calc(0.7vw + 10px); text-decoration: none; font-weight: bold; text-align: left; font-family: sans-serif;'> MagNet tools</span></div>""", unsafe_allow_html=True)
-        
+
         # Set text box style
         st.markdown(
         """
@@ -99,34 +101,34 @@ def main():
                 font-size: 17px;
             }
             .styled-link a {
-                text-decoration: none; 
-                color: rgb(199, 235, 223); 
+                text-decoration: none;
+                color: rgb(199, 235, 223);
                 font-size: 17px;
             }
             .styled-link a:hover {
-                color: rgba(41, 121, 255, 1); 
+                color: rgba(41, 121, 255, 1);
             }
         </style>
-        
+
         <div class="styled-link" style='background-color: rgba(42, 62, 87, 1); padding: 15px; border-radius: 10px;'>
             Data information: <a href="https://www.princeton.edu/~minjie/magnet.html">MagNet  Database</a><br>
             AI platform: <a href="https://mag-net.princeton.edu/">MagNet-AI Platform</a><br>
             Github repo: <a href="https://github.com/upb-lea/mag-net-hub">MagNet Toolkit</a><br>
         </div>
         """, unsafe_allow_html=True)
-        
+
         # Display message
         st.write("""<div style='margin-top: 10px; margin-bottom: 5px;'> <span style='font-size: calc(0.7vw + 10px); text-decoration: none; font-weight: bold; text-align: left; font-family: sans-serif;'> Contact us</span></div>""", unsafe_allow_html=True)
         st.markdown(
         """
         <div class="styled-link" style='background-color: rgba(42, 62, 87, 1); padding: 15px; border-radius: 10px; margin-top: 10px;'>
-            Sinan: 
+            Sinan:
             <a href="mailto:sinan.li@sydney.edu.au">sinan.li@sydney.edu.au</a><br>
-            Qiujie: 
+            Qiujie:
             <a href="mailto:qiujie.huang@sydney.edu.au">qiujie.huang@sydney.edu.au</a>
         </div>
         """, unsafe_allow_html=True)
-                
+
         # White space acts as separator
         st.sidebar.markdown(
             """
@@ -135,9 +137,9 @@ def main():
                     color:transparent;
                     background-color:transparent;'>
             </div>
-            """, 
+            """,
             unsafe_allow_html=True)
-        
+
         # Display uni logo
         st.image("https://openday.sydney.edu.au/static/website/images/usyd-logo-white.png", caption="Powered by: Sydney University", width='stretch')
 
@@ -146,17 +148,17 @@ def main():
         <style>
             /* 1. Adjust the padding of the main block container */
             div.block-container {
-                padding-top: 2.5rem !important; 
+                padding-top: 2.5rem !important;
                 padding-bottom: 1rem !important;
                 padding-left: 2rem !important;
                 padding-right: 1rem !important;
             }
-            
+
             /* 2. Maintain column width constraints */
             [data-testid="column"]  [data-testid="stHorizontalBlock"]  [data-testid="column"]{
                 min-width: 1px !important;
             }
-            
+
             /* 3. [NEW] Make Sidebar Responsive */
             [data-testid="stSidebar"] {
                 width: 20vw !important; /* Set sidebar width to 20% of the viewport width */
@@ -172,281 +174,313 @@ def main():
     st.markdown("<div style='height:0.5vh;'></div>", unsafe_allow_html=True)
     col4, _, col5, _, col6 ,_ = st.columns([1.2, 0.05, 1.3, 0.1, 1.2, 0.05])  # Second row
 
-    # Define the first element in the first row 
+    # Define the first element in the first row
     with col1:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none; font-weight: bold; text-align: left;'> Excitation Waveform [B] </span>""", unsafe_allow_html=True)
 
-        # Shape selector 
-        _, col1_1, col1_2 = st.columns([0.15, 1, 1]) 
+        # Shape selector
+        _, col1_1, col1_2 = st.columns([0.15, 1, 1])
         for i, (label, icon_filename) in enumerate(shapes):
             with col1_1 if (i==0 or i==2) else col1_2:
                 icon_path = join(icon_folder, icon_filename)
                 with open(icon_path, "r") as file:
-                    svg_code = file.read()    
+                    svg_code = file.read()
                 if st.button(label):
                     st.session_state['shape_id'] = i
                 st.write(f'<div style="text-align: left; margin-left:calc(40px - 1.5vw);"><span style="display: inline-block; width: calc(4vw + 25px); height: calc(4vh + 60px); fill: #F5F5F5;">{svg_code}</span></div>', unsafe_allow_html=True)
-   
-    # Define the third element in the first row 
+
+    # Define the third element in the first row
     with col3:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Excitation Parameters [B]</span>""", unsafe_allow_html=True)
 
         # Waveform parameters setting
         if st.session_state['shape_id'] == 0:
-            col3_1, _, col3_2, _ = st.columns([1, 1, 1, 1]) 
+            col3_1, _, col3_2, _ = st.columns([1, 1, 1, 1])
         elif st.session_state['shape_id'] == 1:
-            col3_1, col3_2, col3_3, _ = st.columns([1, 1, 1, 1]) 
+            col3_1, col3_2, col3_3, _ = st.columns([1, 1, 1, 1])
         elif st.session_state['shape_id'] == 2:
-            col3_1, col3_2, col3_3, col3_4 = st.columns([1, 1, 1, 1])           
-  
+            col3_1, col3_2, col3_3, col3_4 = st.columns([1, 1, 1, 1])
+
         # Slider display setting
-        if st.session_state['shape_id'] != 3: 
-            with col3_1:  
+        if st.session_state['shape_id'] != 3:
+            with col3_1:
                 st.session_state['amplitude'] = svs.vertical_slider(
                             label = "Bac [mT]",
-                            key = "slider1", 
-                            default_value = 100, 
-                            step = 1, 
-                            min_value = 10, 
+                            key = "slider1",
+                            default_value = 100,
+                            step = 1,
+                            min_value = 10,
                             max_value = 300,
-                            track_color = "blue", 
-                            slider_color = ("#4A00E0", "#8E2DE2"), 
-                            thumb_color = "#FC5C7D", 
+                            track_color = "blue",
+                            slider_color = ("#4A00E0", "#8E2DE2"),
+                            thumb_color = "#FC5C7D",
                             thumb_shape = "pill",
                             value_always_visible = True,
                             height = 241)
             with col3_2:
                     st.session_state['phase'] = svs.vertical_slider(
                                 label = "φᵢ [°]",
-                                key = "slider2", 
-                                default_value = 0, 
-                                step = 1, 
-                                min_value = 0, 
+                                key = "slider2",
+                                default_value = 0,
+                                step = 1,
+                                min_value = 0,
                                 max_value = 360,
-                                track_color = "blue", 
-                                slider_color = ("#4A00E0", "#8E2DE2"), 
-                                thumb_color = "#FC5C7D", 
+                                track_color = "blue",
+                                slider_color = ("#4A00E0", "#8E2DE2"),
+                                thumb_color = "#FC5C7D",
                                 value_always_visible = True,
                                 thumb_shape = "pill",
                                 height = 239)
-    
-        if st.session_state['shape_id'] == 1 or st.session_state['shape_id'] == 2: 
+
+        if st.session_state['shape_id'] == 1 or st.session_state['shape_id'] == 2:
             with col3_3:
                 if st.session_state['shape_id'] == 1:
                     st.session_state['duty'] = svs.vertical_slider(
                         label = "duty cycle [%]",
-                        key = "slider3", 
-                        default_value = 40, 
-                        step = 1, 
-                        min_value = 1, 
+                        key = "slider3",
+                        default_value = 40,
+                        step = 1,
+                        min_value = 1,
                         max_value = 100,
-                        track_color = "blue", 
+                        track_color = "blue",
                         slider_color = ("#4A00E0", "#8E2DE2"),
-                        thumb_color= "#FC5C7D", 
+                        thumb_color= "#FC5C7D",
                         value_always_visible = True,
                         thumb_shape = "pill",
                         height = 241) / 100
-                else: 
+                else:
                     st.session_state['duty'] = svs.vertical_slider(
                         label="rising duty [%]",
-                        key="slider4", 
-                        default_value = 40, 
-                        step = 1, 
-                        min_value = 1, 
+                        key="slider4",
+                        default_value = 40,
+                        step = 1,
+                        min_value = 1,
                         max_value = 99,
-                        track_color = "blue", 
-                        slider_color = ("#4A00E0", "#8E2DE2"), 
-                        thumb_color = "#FC5C7D",  
+                        track_color = "blue",
+                        slider_color = ("#4A00E0", "#8E2DE2"),
+                        thumb_color = "#FC5C7D",
                         value_always_visible = True,
                         thumb_shape = "pill",
                         height = 241) / 100
-                    
-        if  st.session_state['shape_id'] == 2:  
+
+        if  st.session_state['shape_id'] == 2:
             with col3_4:
                 st.session_state['duty2'] = svs.vertical_slider(
                     label = "falling duty [%]",
-                    key = "slider5", 
-                    default_value=(100 - st.session_state['duty'] * 100) / 2, 
-                    step = 1, 
-                    min_value = 1, 
+                    key = "slider5",
+                    default_value=(100 - st.session_state['duty'] * 100) / 2,
+                    step = 1,
+                    min_value = 1,
                     max_value = 100 - st.session_state['duty'] * 100,
-                    track_color = "blue", 
-                    slider_color = ("#4A00E0","#8E2DE2"), 
-                    thumb_color = "#FC5C7D", 
+                    track_color = "blue",
+                    slider_color = ("#4A00E0","#8E2DE2"),
+                    thumb_color = "#FC5C7D",
                     value_always_visible = True,
                     thumb_shape = "pill",
                     height = 241) / 100
-                
-        # Allow user to upload a customized waveform
-        if st.session_state['shape_id'] == 3: 
-            uploaded_file = st.file_uploader("Resolution >= :red["+str(resolution_params[model])+" steps]", type=['csv'], help="Load user-defined flux excitation and :red[only read data in the 1st row].")
 
-    # Define the first element in the second row 
+        custom_waveform = None
+        # Validate custom data while keeping the result panels visible.
+        if st.session_state['shape_id'] == 3:
+            resolution = resolution_params[model]
+            # Match the neighbouring chart height; expanded help scrolls inside.
+            with st.container(height=350, border=False):
+                uploaded_file = st.file_uploader("Upload flux waveform CSV", type=['csv'], label_visibility="collapsed")
+                st.caption(f"Single row · {resolution}+ samples · Tesla (T)")
+                example = 0.1 * np.sin(np.linspace(0, 2 * np.pi, resolution, endpoint=False))
+                st.download_button("Download CSV template", ','.join(f'{value:.9g}' for value in example) + '\n', file_name=f'flux_waveform_template_{resolution}_samples.csv', mime='text/csv', width='stretch')
+                if uploaded_file is not None:
+                    try:
+                        custom_waveform = read_waveform_csv(uploaded_file.getvalue(), resolution)
+                    except ValueError as exc:
+                        st.error(f"Invalid CSV data. {exc}")
+                with st.expander("Format guide"):
+                    st.markdown("""- One row of comma-separated numbers, saved as UTF-8.
+- Equally spaced samples covering one complete period.
+- Values in **tesla (T)**: 0.1 T = 100 mT.
+- No header, time column, units, empty cells, NaN, or infinity.
+- The waveform must vary. Extra samples are downsampled.
+
+The template contains an example cycle. Replace its values with your own samples, keeping the single-row format.""")
+
+    # Define the first element in the second row
     with col4:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Operating Conditions [f, T]</span><div style='margin-bottom: 3vh;'></div>""",unsafe_allow_html=True)
 
         # Element layout setting
         _, col4_1, _, col4_2 = st.columns([0.18, 1.1, 0.12, 1.2])
-        
+
         # Frequency and Temperature selector setting
         with col4_1:
             # Add blank space
             st.markdown("<div ></div>", unsafe_allow_html=True)
-            
-            # Add slider for frequency 
+
+            # Add slider for frequency
             Frequency = st.number_input("Frequency, f [kHz]", format="%d", value=100, step=1, min_value=10, max_value=450)
-            
+
             # Add blank space
             st.markdown("<div style='height:3vw;'></div>", unsafe_allow_html=True)
-            
+
             # Add slider for temperature
             Temperature = st.number_input("Temperature, T [°C]", format="%d", value=25, step=1, min_value=25, max_value=90)
-        
+
         with col4_2:
-            # Add donut plot for frequency 
+            # Add donut plot for frequency
             donut_chart_F = draw_donut(Frequency, 'Frequency', 'blue', [10, 450])
             st.altair_chart(donut_chart_F, width='stretch')
-            
+
             # Add donut plot for temperature
             donut_chart_T = draw_donut(Temperature, 'Temperature', 'red', [25, 90])
             st.altair_chart(donut_chart_T, width='stretch')
 
-    # Define the second element in the first row 
+    # Define the second element in the first row
     with col2:
         # Import numpy package
-        from numpy import array, linspace, genfromtxt, arange, append, sin, pi
-        
+        from numpy import array, linspace, append, sin, pi
+
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none; font-weight: bold;text-align: left;'> Time-Domain Response [B-H]</span>""", unsafe_allow_html=True)
 
-        # Data loading 
+        # Data loading
         t = linspace(0, 0, resolution_params[model])
         B = linspace(0, 0, resolution_params[model])
-        if st.session_state['shape_id'] == 0: 
+        if st.session_state['shape_id'] == 0:
             t = linspace(0, 1, resolution_params[model])
             B = st.session_state['amplitude'] * sin((360 * t+st.session_state['phase']) * pi / 180)
         elif st.session_state['shape_id'] == 1:
             t = linspace(0, 1, resolution_params[model])
             B = array(generateTriSequence(t, st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty']))
-        elif st.session_state['shape_id'] == 2:  
-            t = linspace(0, 1, resolution_params[model])  
+        elif st.session_state['shape_id'] == 2:
+            t = linspace(0, 1, resolution_params[model])
             B = array(generateTrapSequence(t, st.session_state['amplitude'], st.session_state['phase'], st.session_state['duty'], st.session_state['duty2']))
-        else: 
-            if uploaded_file is not None: 
-                t = linspace(0, 1, resolution_params[model])  
-                first_row = genfromtxt(uploaded_file, delimiter=',', max_rows=1)
-                index = [int(x) for x in arange(0, len(first_row) - 1, (len(first_row) - 1)/ resolution_params[model])]
-                B = array(first_row[index].tolist()) * 1000  # convert to mT
-       
-        # Predict field strength and core loss density 
-        if sum(B) == 0:
-            H  = linspace(0, 0, resolution_params[model])
-        else:
-            P ,H = mdl(B / 1000, Frequency * 1000, Temperature) # convert to B in [T], f in [Hz]
-            H = H.squeeze()
+        elif custom_waveform is not None:
+            t = linspace(0, 1, resolution_params[model])
+            B = custom_waveform * 1000  # convert T to mT
 
-        # Add repeated first point to close curve
-        t = append(t, t[0])
-        B = append(B, B[0])
-        H = append(H, H[0])
-        
-        # Plot setting  
-        chart = draw_line(B, H, t)
-        st.altair_chart(chart, width='stretch')
-      
-    # Define the second element in the second row   
+        # A zero-mean waveform is valid; only an all-zero waveform is empty.
+        has_waveform = bool(np.any(B))
+        if not has_waveform:
+            H = linspace(0, 0, resolution_params[model])
+        else:
+            try:
+                P, H = mdl(B / 1000, Frequency * 1000, Temperature)
+                H = np.asarray(H).squeeze()
+                if H.shape != B.shape or not np.isfinite(H).all() or not np.isfinite(P).all():
+                    raise ValueError("The model returned invalid results.")
+            except (ValueError, RuntimeError, OverflowError, ZeroDivisionError):
+                if st.session_state['shape_id'] != 3:
+                    raise
+                st.error("Unable to calculate results for this CSV. Check that the values are in tesla (T) and describe one complete, varying waveform period suitable for the selected model.")
+                has_waveform = False
+
+        if has_waveform:
+            # Add repeated first point to close curve
+            t = append(t, t[0])
+            B = append(B, B[0])
+            H = append(H, H[0])
+
+            # Plot setting
+            chart = draw_line(B, H, t)
+            st.altair_chart(chart, width='stretch')
+        else:
+            st.altair_chart(draw_empty_response(time_domain=True), width='stretch')
+
+    # Define the second element in the second row
     with col5:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none; font-weight: bold;text-align: left;'> Steady-State Loop [B-H]</span>""", unsafe_allow_html=True)
 
-        import altair as alt
-        source_loop = DataFrame({'H': H, 'B': B, 'order': range(len(B))})
-        
-        h_min, h_max = H.min(), H.max()
-        h_padding = (h_max - h_min) * 0.05
-        h_domain = [h_min - h_padding, h_max + h_padding]
-        
-        b_min, b_max = B.min(), B.max()
-        b_padding = (b_max - b_min) * 0.05
-        b_domain = [b_min - b_padding, b_max + b_padding]
-        
-        chart2 = alt.Chart(source_loop).mark_line(
-            strokeWidth=4,   
-            color='#2AB0E4'     
-        ).encode(
-            x=alt.X('H', title='H [A/m]', sort=None, scale=alt.Scale(domain=h_domain)), # sort=None avoids automatic sorting
-            y=alt.Y('B', title='B [mT]', scale=alt.Scale(domain=b_domain)  ),
-            order='order',  # force the drawing order
-            tooltip=['H', 'B']
-        ).properties(
-            height=350 
-        ).interactive()
+        if has_waveform:
+            import altair as alt
+            source_loop = DataFrame({'H': H, 'B': B, 'order': range(len(B))})
 
-        # Plot setting  
-        st.altair_chart(chart2, width='stretch')
-  
-    # Define the third element in the second row   
+            h_min, h_max = H.min(), H.max()
+            h_padding = (h_max - h_min) * 0.05
+            h_domain = [h_min - h_padding, h_max + h_padding]
+
+            b_min, b_max = B.min(), B.max()
+            b_padding = (b_max - b_min) * 0.05
+            b_domain = [b_min - b_padding, b_max + b_padding]
+
+            chart2 = alt.Chart(source_loop).mark_line(
+                strokeWidth=4,
+                color='#2AB0E4'
+            ).encode(
+                x=alt.X('H', title='H [A/m]', sort=None, scale=alt.Scale(domain=h_domain)), # sort=None avoids automatic sorting
+                y=alt.Y('B', title='B [mT]', scale=alt.Scale(domain=b_domain)  ),
+                order='order',  # force the drawing order
+                tooltip=['H', 'B']
+            ).properties(
+                height=350
+            ).interactive()
+
+            # Plot setting
+            st.altair_chart(chart2, width='stretch')
+        else:
+            st.altair_chart(draw_empty_response(time_domain=False), width='stretch')
+
+    # Define the third element in the second row
     with col6:
         # Display message
         st.write("""<span style='font-size: calc(0.6vw + 0.6vh + 10px); text-decoration: none;font-weight: bold;text-align: left;'> Volumetric Loss [Pv]</span>""", unsafe_allow_html=True)
 
-        # Customize a textbox 
+        # Customize a textbox
         custom_css = """
         .metric-container {
-            background-color: #875A12; 
-            border-radius: 10px;  
-            padding: 0px; 
+            background-color: #875A12;
+            border-radius: 10px;
+            padding: 0px;
         }
         .metric-container h1 {
-            font-size: calc(2vw + 2vh + 10px); 
-            color: #f38612;  
+            font-size: calc(2vw + 2vh + 10px);
+            color: #f38612;
             text-align: center;
-            padding-top: calc(1vw + 1vh);  
-            padding-bottom: 0px;    
+            padding-top: calc(1vw + 1vh);
+            padding-bottom: 0px;
         }
         .metric-container p {
-            font-size: calc(0.5vw + 0.5vh + 5px); 
-            color: white;  
+            font-size: calc(0.5vw + 0.5vh + 5px);
+            color: white;
             text-align: center;
-            padding-bottom: 1.2vw; 
+            padding-bottom: 1.2vw;
         }
         """
         st.markdown(f'<style>{custom_css}</style>', unsafe_allow_html=True)
-        
+
         # Display customize metric container
-        if sum(B) == 0:
-            st.markdown(f'<div class="metric-container"><h1>Unknown</h1><p>kW/m³</p></div>', unsafe_allow_html=True)   
-            
-            # Add blank space  
+        if not has_waveform:
+            st.markdown(f'<div class="metric-container"><h1>NaN</h1><p>kW/m³</p></div>', unsafe_allow_html=True)
+
+            # Add blank space
             st.markdown("<div style='height:2vh;'></div>", unsafe_allow_html=True)
-            
+
             # Add left margin to the download button
             _, col6_1 = st.columns([1.4, 1])
             with col6_1:
                 # Disabled download button
                 text_contents = '''Error occurs during downloading'''
                 st.download_button("Download\n\n 📂", text_contents, disabled=True)
-        else: 
+        else:
             # Display message
             st.markdown(f'<div class="metric-container"><h1>{round(P/1000, 2)}</h1><p>kW/m³</p></div>', unsafe_allow_html=True)
-            
-            # Add blank space 
+
+            # Add blank space
             st.markdown("<div style='height:2vh;'></div>", unsafe_allow_html=True)
-            
+
             # Add left margin to the download button
             _, col6_1 = st.columns([1.4, 1])
-            
-            # Create the csv file for the predicted results             
+
+            # Create the csv file for the predicted results
             with col6_1:
                 df = DataFrame(columns=['B [mT]','H [A/m]','Pv [W/m3]'])
                 df['B [mT]'] = B
                 df['H [A/m]'] = H
                 df['Pv [W/m3]'] = [P] + [None] * (len(B) - 1)
                 csv = df.to_csv()
-                
+
                 # Display the download button
                 st.download_button(
                     label="Download 📂",

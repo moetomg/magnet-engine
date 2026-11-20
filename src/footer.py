@@ -3,12 +3,15 @@ File contains the footer of magnet-engine.
 
 Source: https://github.com/moetomg/magnet-engine
 """
+from base64 import b64encode
+from pathlib import Path
+
 import streamlit as st
 
 from htbuilder.units import percent, px
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 
-def image(src, **style):
+def image(src, alt="", **style):
     """
     Create an image element.
     
@@ -16,7 +19,7 @@ def image(src, **style):
         src (string): The image source file.
         **style (dictionary): The dictionary contains CSS properties and values
     """ 
-    return img(src=src, style=styles(**style))
+    return img(src=src, alt=alt, style=styles(**style))
 
 def link(link, text, **style):
     """
@@ -34,11 +37,15 @@ def footer():
     Create the footer for the GUI.
 
     """ 
+    # Official Python logo: https://www.python.org/community/logos/
+    logo_path = Path(__file__).resolve().parents[1] / "icons" / "python-logo.png"
+    python_logo = "data:image/png;base64," + b64encode(logo_path.read_bytes()).decode("ascii")
+
     # Create a dictionary contains the objects to be displayed
     myargs = [
         "<b>Made with</b>: Python 3.11 ",
-        link("https://www.python.org/", image('https://i.imgur.com/ml09ccU.png',
-        	width=px(18), height=px(18), margin= "0em")),
+        link("https://www.python.org/", image(python_logo, alt="Python logo",
+              width="auto", height=px(18), margin="0em", vertical_align="middle")),
         ", Streamlit ",
         link("https://streamlit.io/", image('https://docs.streamlit.io/logo.svg',
         	width=px(24), height=px(25), margin= "0em")),
